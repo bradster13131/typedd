@@ -310,24 +310,24 @@ def embed_emulator(open_ticket_mention=""):
     e.description = (
         f"*The #1 Vanguard bypass on the market. Undetected · Updated within hours.*\n"
         f"{DIV}\n\n"
-        "**🛡  ᴄᴏᴍᴘᴀᴛɪʙɪʟɪᴛʏ**\n"
-        "→  Windows 10 & 11\n"
-        "→  All Motherboards\n"
-        "→  All CPUs & GPUs\n"
-        "→  HVCI On or Off\n\n"
+        "**🛡  ꜱᴜᴘᴘᴏʀᴛᴇᴅ ꜱʏꜱᴛᴇᴍꜱ**\n"
+        "→  Supports All Windows Versions\n"
+        "→  Supports All Processors\n"
+        "→  Supports All Motherboards\n"
+        "→  No Windows Reinstall\n"
+        "→  No BIOS Flash\n\n"
         "**⚔  ꜰᴇᴀᴛᴜʀᴇꜱ**\n"
-        "→  Play completely without anticheat\n"
-        "→  Bypasses VAN 152 & -102 errors\n"
-        "→  Bypasses VALORANT 5\n"
-        "→  No game restart required\n"
-        "→  Bypasses HVCI · TPM · Secure Boot\n"
-        "→  One-click Vanguard emulation\n\n"
+        "→  Fully Emulated Vanguard Anticheat\n"
+        "→  No Game Reinstall\n"
+        "→  Bypass VAN 152 Instantly\n"
+        "→  Restart Valorant Every Match\n"
+        "→  Bypass All Restrictions\n"
+        "→  Play With Free Cheat Without Ban\n\n"
         f"{DIV}\n\n"
         "**💰  ᴘʀɪᴄɪɴɢ**\n"
-        "→  3 Days ——— £4.99\n"
-        "→  1 Week ——— £14.99\n"
-        "→  1 Month —— £29.99\n"
-        "→  Lifetime — £249.99\n\n"
+        "→  3 Days ——— $40\n"
+        "→  1 Week ——— $70\n"
+        "→  1 Month —— $250\n\n"
         f"{DIV}\n\n"
         f"**📩  To purchase, open a ticket in {open_ticket_mention or '`#open-ticket`'}**"
     )
@@ -894,6 +894,61 @@ async def build(ctx):
 
     log.info("BUILD COMPLETE")
     await dm("☠️  **MISERY** build complete! Everything is live.")
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  !add1  ─  update misery-emulator embed
+# ─────────────────────────────────────────────────────────────────────────────
+@bot.command(name="add1")
+@commands.has_permissions(administrator=True)
+async def add1(ctx):
+    guild    = ctx.guild
+    role_map = {r.name: r for r in guild.roles}
+
+    products_cat = discord.utils.find(
+        lambda c: "products" in c.name.lower(), guild.categories
+    )
+    if not products_cat:
+        await ctx.send("❌  Could not find the PRODUCTS category. Run `!build` first.", delete_after=8)
+        return
+
+    ow = build_overwrites(guild, None, "STAFF", role_map)
+
+    open_ticket_ch = discord.utils.find(
+        lambda c: "open-ticket" in c.name.lower(), guild.text_channels
+    )
+    open_ticket_mention = open_ticket_ch.mention if open_ticket_ch else "`#open-ticket`"
+
+    status_msg = await ctx.send("⚙️  Updating emulator channel...")
+
+    emulator_ch = discord.utils.find(
+        lambda c: "misery-emulator" in c.name.lower(), guild.text_channels
+    )
+    if not emulator_ch:
+        emulator_ch = await guild.create_text_channel(
+            ch("🔴", "misery-emulator"), category=products_cat, overwrites=ow
+        )
+        await status_msg.edit(content="⚙️  Created `misery-emulator`...")
+    else:
+        await status_msg.edit(content="⚙️  `misery-emulator` exists — updating embed...")
+
+    try:
+        await emulator_ch.purge(limit=10)
+    except Exception:
+        pass
+    await emulator_ch.send(embed=embed_emulator(open_ticket_mention), file=logo_file())
+    await asyncio.sleep(0.5)
+
+    e = discord.Embed(color=RED)
+    e.title = "✅  ᴀᴅᴅ1 ᴄᴏᴍᴘʟᴇᴛᴇ"
+    e.description = (
+        f"{DIV}\n\n"
+        "🟢  **misery-emulator** — updated\n\n"
+        f"{DIV}"
+    )
+    e.set_footer(text="MISERY © 2025  ·  !add1")
+    await status_msg.delete()
+    await ctx.send(embed=e)
+    log.info(f"[ADD1] Completed by {ctx.author}")
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  !add2
