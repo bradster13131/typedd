@@ -91,8 +91,9 @@ SERVER_LAYOUT = [
     {
         "category": cat("🔴", "products"),
         "channels": [
-            {"type": "text", "key": "emulator",       "name": ch("🔴","misery-emulator"), "read": None, "write": "STAFF"},
-            {"type": "text", "key": "internal",       "name": ch("🔴","misery-internal"), "read": None, "write": "STAFF"},
+            {"type": "text", "key": "emulator",      "name": ch("🔴","misery-emulator"),     "read": None, "write": "STAFF"},
+            {"type": "text", "key": "internal",      "name": ch("🔴","misery-internal"),     "read": None, "write": "STAFF"},
+            {"type": "text", "key": "skinchanger",   "name": ch("🎨","misery-skinchanger"),  "read": None, "write": "STAFF"},
         ],
     },
     {
@@ -826,6 +827,91 @@ async def security_stop(ctx):
     await ctx.send(embed=e)
     log.info(f"[SECURITY] Stopped by {ctx.author}")
 
+# ── INTERNAL (updated prices + full feature list) ────────────────────────────
+def embed_internal_v2(open_ticket_mention=""):
+    e = discord.Embed(color=RED)
+    e.set_thumbnail(url=LOGO_ATTACH)
+    e.description = (
+        "```ansi\n"
+        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
+        "\u001b[1;31m  ║     🔴  MISERY  ─  INTERNAL CHEAT    ║\u001b[0m\n"
+        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
+        "\u001b[2;37m  Flagship internal. Undetected.          \u001b[0m\n"
+        "```\n"
+        "```ansi\n"
+        "\u001b[1;31m  ┌─  🎯  AIMBOT  ──────────────────────────\u001b[0m\n"
+        "\u001b[2;37m  │  Enable · Calc Spread · 360 FOV         \u001b[0m\n"
+        "\u001b[2;37m  │  Visible Check · Recoil Control          \u001b[0m\n"
+        "\u001b[2;37m  │  Draw FOV · FOV RGB · Smoothness         \u001b[0m\n"
+        "\u001b[2;37m  │  FOV Value · Aim Key · Target Bone       \u001b[0m\n"
+        "\u001b[1;31m  ├─  👁  VISUALS  ─────────────────────────\u001b[0m\n"
+        "\u001b[2;37m  │  Skeleton · Box 3D · Box 2D              \u001b[0m\n"
+        "\u001b[2;37m  │  Box With Health · Box Corner · Head Box \u001b[0m\n"
+        "\u001b[2;37m  │  Snapline · Health Bar · Agent · Distance\u001b[0m\n"
+        "\u001b[2;37m  │  Weapon · Player Name · Rank · Ammo      \u001b[0m\n"
+        "\u001b[2;37m  │  WireFrame · Chams · Chams RGB · Radar   \u001b[0m\n"
+        "\u001b[2;37m  │  Sound ESP · Spectator · Spike Timer     \u001b[0m\n"
+        "\u001b[2;37m  │  Abilities · Visible Check               \u001b[0m\n"
+        "\u001b[1;31m  ├─  ⚙  MISC  ────────────────────────────\u001b[0m\n"
+        "\u001b[2;37m  │  Skip Tutorial · FOV Changer             \u001b[0m\n"
+        "\u001b[2;37m  │  Aspect Ratio · Watermark · Bullet Tracers\u001b[0m\n"
+        "\u001b[2;37m  │  View Model · Damage Counter · Hit Sound \u001b[0m\n"
+        "\u001b[2;37m  │  China Hat · Third Person · Hit Sound Sel\u001b[0m\n"
+        "\u001b[1;31m  ├─  🎨  SKINS  ───────────────────────────\u001b[0m\n"
+        "\u001b[2;37m  │  Unlock All Skins · Finishers             \u001b[0m\n"
+        "\u001b[2;37m  │  Only Last Kill · Gun Buddy               \u001b[0m\n"
+        "\u001b[1;31m  ├─  🎨  COLORS  ──────────────────────────\u001b[0m\n"
+        "\u001b[2;37m  │  ESP Visible/Hidden · Health Colors       \u001b[0m\n"
+        "\u001b[2;37m  │  Chams · Watermark · Glow Intensity       \u001b[0m\n"
+        "\u001b[1;31m  ├─  💾  CONFIGS  ─────────────────────────\u001b[0m\n"
+        "\u001b[2;37m  │  Clipboard Import/Export · Save/Load      \u001b[0m\n"
+        "\u001b[2;37m  │  UNLOAD · Menu Key                        \u001b[0m\n"
+        "\u001b[1;31m  ├─  💰  PRICING  ────────────────────────\u001b[0m\n"
+        "\u001b[1;37m  │  ╰─›  3 Days    ─  $20\u001b[0m\n"
+        "\u001b[1;37m  │  ╰─›  1 Week    ─  $30\u001b[0m\n"
+        "\u001b[1;37m  │  ╰─›  1 Month   ─  $60\u001b[0m\n"
+        "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
+        "```\n"
+        f"**📩  To purchase, go to {open_ticket_mention or '`#open-ticket`'} and click Purchase**"
+    )
+    e.set_footer(text="MISERY © 2025  ·  Internal Cheat")
+    return e
+
+# ── SKINCHANGER ───────────────────────────────────────────────────────────────
+def embed_skinchanger(open_ticket_mention=""):
+    e = discord.Embed(color=RED)
+    e.set_thumbnail(url=LOGO_ATTACH)
+    e.description = (
+        "```ansi\n"
+        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
+        "\u001b[1;31m  ║    🎨  MISERY  ─  SKIN CHANGER       ║\u001b[0m\n"
+        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
+        "\u001b[2;37m  Change any skin. Undetected.            \u001b[0m\n"
+        "```\n"
+        "```ansi\n"
+        "\u001b[1;31m  ┌─  🛡  COMPATIBILITY  ───────────────────\u001b[0m\n"
+        "\u001b[2;37m  │  ╰─›  Windows 10 & 11\u001b[0m\n"
+        "\u001b[2;37m  │  ╰─›  All Motherboards & CPUs\u001b[0m\n"
+        "\u001b[2;37m  │  ╰─›  HVCI On or Off\u001b[0m\n"
+        "\u001b[1;31m  ├─  ⚔  FEATURES  ────────────────────────\u001b[0m\n"
+        "\u001b[2;37m  │  ╰─›  Unlock All Skins\u001b[0m\n"
+        "\u001b[2;37m  │  ╰─›  Unlock All Colours\u001b[0m\n"
+        "\u001b[2;37m  │  ╰─›  Unlock All Buddies\u001b[0m\n"
+        "\u001b[2;37m  │  ╰─›  Unlock All Sprays & Cards\u001b[0m\n"
+        "\u001b[2;37m  │  ╰─›  Finishers & Gun Buddies\u001b[0m\n"
+        "\u001b[2;37m  │  ╰─›  Client-sided · Easy one-click use\u001b[0m\n"
+        "\u001b[1;31m  ├─  💰  PRICING  ────────────────────────\u001b[0m\n"
+        "\u001b[1;37m  │  ╰─›  3 Days    ─  $10\u001b[0m\n"
+        "\u001b[1;37m  │  ╰─›  1 Week    ─  $20\u001b[0m\n"
+        "\u001b[1;37m  │  ╰─›  1 Month   ─  $50\u001b[0m\n"
+        "\u001b[1;37m  │  ╰─›  Lifetime  ─  $100\u001b[0m\n"
+        "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
+        "```\n"
+        f"**📩  To purchase, go to {open_ticket_mention or '`#open-ticket`'} and click Purchase**"
+    )
+    e.set_footer(text="MISERY © 2025  ·  Skin Changer")
+    return e
+
 # ─────────────────────────────────────────────────────────────────────────────
 #  EMBED MAP
 # ─────────────────────────────────────────────────────────────────────────────
@@ -839,6 +925,7 @@ EMBED_MAP = {
     "reselling":    embed_reselling,
     "emulator":     embed_emulator,
     "internal":     embed_internal,
+    "skinchanger":  embed_skinchanger,
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -902,7 +989,7 @@ async def build(ctx):
         ch_obj = key_to_channel.get(key)
         if ch_obj:
             try:
-                if key in ("emulator", "internal"):
+                if key in ("emulator", "internal", "skinchanger"):
                     embed = fn(open_ticket_mention)
                 else:
                     embed = fn()
@@ -923,6 +1010,91 @@ async def build(ctx):
 
     log.info("BUILD COMPLETE")
     await dm("☠️  **MISERY** build complete! Everything is live.")
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  !add2  ─  adds misery-internal (updated) + misery-skinchanger to products
+# ─────────────────────────────────────────────────────────────────────────────
+@bot.command(name="add2")
+@commands.has_permissions(administrator=True)
+async def add2(ctx):
+    guild    = ctx.guild
+    role_map = {r.name: r for r in guild.roles}
+
+    # Find the products category (case-insensitive partial match)
+    products_cat = discord.utils.find(
+        lambda c: "products" in c.name.lower(), guild.categories
+    )
+    if not products_cat:
+        await ctx.send("❌  Could not find the PRODUCTS category. Run `!build` first.", delete_after=8)
+        return
+
+    # Permissions: everyone can read, only staff can write
+    ow = build_overwrites(guild, None, "STAFF", role_map)
+
+    # Find open-ticket channel for clickable mention in embeds
+    open_ticket_ch = discord.utils.find(
+        lambda c: "open-ticket" in c.name.lower(), guild.text_channels
+    )
+    open_ticket_mention = open_ticket_ch.mention if open_ticket_ch else "`#open-ticket`"
+
+    status_msg = await ctx.send("⚙️  Adding channels...")
+
+    # ── misery-internal (updated embed) ──────────────────────────────────────
+    internal_ch = discord.utils.find(
+        lambda c: "misery-internal" in c.name.lower(), guild.text_channels
+    )
+    if not internal_ch:
+        internal_ch = await guild.create_text_channel(
+            ch("🔴", "misery-internal"), category=products_cat, overwrites=ow
+        )
+        await status_msg.edit(content="⚙️  Created `misery-internal`...")
+    else:
+        await status_msg.edit(content="⚙️  `misery-internal` exists — updating embed...")
+
+    # Clear old messages in internal channel (up to 10)
+    try:
+        await internal_ch.purge(limit=10)
+    except Exception:
+        pass
+    await internal_ch.send(embed=embed_internal_v2(open_ticket_mention), file=logo_file())
+    await asyncio.sleep(0.5)
+
+    # ── misery-skinchanger (new channel) ─────────────────────────────────────
+    skin_ch = discord.utils.find(
+        lambda c: "skinchanger" in c.name.lower(), guild.text_channels
+    )
+    if not skin_ch:
+        skin_ch = await guild.create_text_channel(
+            ch("🎨", "misery-skinchanger"), category=products_cat, overwrites=ow
+        )
+        await status_msg.edit(content="⚙️  Created `misery-skinchanger`...")
+    else:
+        await status_msg.edit(content="⚙️  `misery-skinchanger` exists — updating embed...")
+
+    try:
+        await skin_ch.purge(limit=10)
+    except Exception:
+        pass
+    await skin_ch.send(embed=embed_skinchanger(open_ticket_mention), file=logo_file())
+    await asyncio.sleep(0.5)
+
+    # Done
+    e = discord.Embed(color=RED)
+    e.description = (
+        "```ansi\n"
+        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
+        "\u001b[1;31m  ║       ✅   A D D 2   D O N E         ║\u001b[0m\n"
+        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
+        "```\n"
+        "```ansi\n"
+        "\u001b[1;32m  ●  misery-internal    ─  updated\u001b[0m\n"
+        "\u001b[1;32m  ●  misery-skinchanger ─  live\u001b[0m\n"
+        "```"
+    )
+    e.set_footer(text="MISERY © 2025  ·  !add2")
+    await status_msg.delete()
+    await ctx.send(embed=e)
+    log.info(f"[ADD2] Completed by {ctx.author}")
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  !close  ─  staff command
