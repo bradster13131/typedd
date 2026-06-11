@@ -553,6 +553,232 @@ class CloseView(discord.ui.View):
         await interaction.channel.delete()
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  SECURITY SYSTEM
+# ─────────────────────────────────────────────────────────────────────────────
+import time
+import re as _re
+
+# Role IDs
+OWNER_ROLE_ID     = 1514460191465406544
+DEVELOPER_ROLE_ID = 1514460196196450465
+MOD_ROLE_ID       = 1514460200554463232
+MEMBER_ROLE_ID    = 1514460210419204258
+ALLOWED_INVITE_ROLES = {OWNER_ROLE_ID, DEVELOPER_ROLE_ID, MOD_ROLE_ID}
+
+# Security state
+security_active   = False
+spam_tracker      = {}          # user_id → [timestamps]
+nuke_tracker      = {}          # user_id → {"deletes": count, "last": timestamp}
+
+SPAM_LIMIT        = 8           # messages in SPAM_WINDOW seconds = warning
+SPAM_WINDOW       = 5
+NUKE_DELETE_LIMIT = 3           # channel/role deletes in NUKE_WINDOW = kick
+NUKE_WINDOW       = 10
+
+INVITE_RE = _re.compile(r"(discord\.gg/|discord\.com/invite/|discordapp\.com/invite/)\S+", _re.IGNORECASE)
+
+def has_any_role(member, role_ids):
+    return any(r.id in role_ids for r in member.roles)
+
+async def warn_user(channel, member, reason):
+    """Send a styled warning into the channel."""
+    e = discord.Embed(color=RED)
+    e.description = (
+        "```ansi\n"
+        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
+        "\u001b[1;31m  ║         ⚠️   W A R N I N G           ║\u001b[0m\n"
+        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
+        "```\n"
+        "```ansi\n"
+        f"\u001b[1;37m  User  \u001b[0m\u001b[2;37m{member.name}\u001b[0m\n"
+        f"\u001b[1;31m  ╰─›  {reason}\u001b[0m\n"
+        "```"
+    )
+    e.set_footer(text="MISERY © 2025  ·  Security System")
+    try:
+        await channel.send(embed=e, delete_after=10)
+    except Exception:
+        pass
+
+# ── ANTI-NUKE: track audit log channel/role deletions ────────────────────────
+@bot.event
+async def on_guild_channel_delete(channel):
+    if not security_active:
+        return
+    guild = channel.guild
+    await asyncio.sleep(0.5)   # let audit log populate
+    try:
+        async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_delete):
+            perpetrator = entry.user
+            if perpetrator is None or perpetrator.bot:
+                return
+            # Owners (top staff) are exempt
+            if perpetrator.id == guild.owner_id:
+                return
+            # Check if this person has a dangerous role (mod or below) doing deletions
+            uid = perpetrator.id
+            now = time.time()
+            if uid not in nuke_tracker:
+                nuke_tracker[uid] = {"deletes": 0, "last": now}
+            tracker = nuke_tracker[uid]
+            if now - tracker["last"] > NUKE_WINDOW:
+                tracker["deletes"] = 0
+            tracker["deletes"] += 1
+            tracker["last"] = now
+            log.warning(f"[ANTI-NUKE] {perpetrator} deleted a channel ({tracker['deletes']} in window)")
+            if tracker["deletes"] >= NUKE_DELETE_LIMIT:
+                nuke_tracker[uid] = {"deletes": 0, "last": now}
+                # Remove all dangerous roles first
+                try:
+                    dangerous = [r for r in perpetrator.roles if r.id in {MOD_ROLE_ID, DEVELOPER_ROLE_ID}]
+                    if dangerous:
+                        await perpetrator.remove_roles(*dangerous, reason="Anti-nuke: mass channel delete")
+                except Exception as ex:
+                    log.error(f"[ANTI-NUKE] Role remove failed: {ex}")
+                # Kick
+                try:
+                    await guild.kick(perpetrator, reason="Anti-nuke: mass channel deletion detected")
+                    log.warning(f"[ANTI-NUKE] Kicked {perpetrator} for mass channel deletion.")
+                except Exception as ex:
+                    log.error(f"[ANTI-NUKE] Kick failed: {ex}")
+    except Exception as ex:
+        log.error(f"[ANTI-NUKE] Audit log error: {ex}")
+
+@bot.event
+async def on_guild_role_delete(role):
+    if not security_active:
+        return
+    guild = role.guild
+    await asyncio.sleep(0.5)
+    try:
+        async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.role_delete):
+            perpetrator = entry.user
+            if perpetrator is None or perpetrator.bot:
+                return
+            if perpetrator.id == guild.owner_id:
+                return
+            uid = perpetrator.id
+            now = time.time()
+            if uid not in nuke_tracker:
+                nuke_tracker[uid] = {"deletes": 0, "last": now}
+            tracker = nuke_tracker[uid]
+            if now - tracker["last"] > NUKE_WINDOW:
+                tracker["deletes"] = 0
+            tracker["deletes"] += 1
+            tracker["last"] = now
+            log.warning(f"[ANTI-NUKE] {perpetrator} deleted a role ({tracker['deletes']} in window)")
+            if tracker["deletes"] >= NUKE_DELETE_LIMIT:
+                nuke_tracker[uid] = {"deletes": 0, "last": now}
+                try:
+                    dangerous = [r for r in perpetrator.roles if r.id in {MOD_ROLE_ID, DEVELOPER_ROLE_ID}]
+                    if dangerous:
+                        await perpetrator.remove_roles(*dangerous, reason="Anti-nuke: mass role delete")
+                except Exception as ex:
+                    log.error(f"[ANTI-NUKE] Role remove failed: {ex}")
+                try:
+                    await guild.kick(perpetrator, reason="Anti-nuke: mass role deletion detected")
+                    log.warning(f"[ANTI-NUKE] Kicked {perpetrator} for mass role deletion.")
+                except Exception as ex:
+                    log.error(f"[ANTI-NUKE] Kick failed: {ex}")
+    except Exception as ex:
+        log.error(f"[ANTI-NUKE] Audit log error: {ex}")
+
+# ── MESSAGE SECURITY: spam + invite filter ────────────────────────────────────
+@bot.event
+async def on_message(message):
+    if not message.guild or message.author.bot:
+        await bot.process_commands(message)
+        return
+
+    member = message.author
+
+    if security_active:
+        # ── INVITE FILTER ──────────────────────────────────────────────────
+        if INVITE_RE.search(message.content):
+            if not has_any_role(member, ALLOWED_INVITE_ROLES):
+                try:
+                    await message.delete()
+                except Exception:
+                    pass
+                await warn_user(
+                    message.channel, member,
+                    "Discord invites are not allowed."
+                )
+                log.info(f"[SECURITY] Deleted invite from {member}")
+                await bot.process_commands(message)
+                return
+
+        # ── SPAM FILTER ────────────────────────────────────────────────────
+        uid  = member.id
+        now  = time.time()
+        if uid not in spam_tracker:
+            spam_tracker[uid] = []
+        spam_tracker[uid] = [t for t in spam_tracker[uid] if now - t < SPAM_WINDOW]
+        spam_tracker[uid].append(now)
+
+        if len(spam_tracker[uid]) >= SPAM_LIMIT:
+            spam_tracker[uid] = []
+            try:
+                await message.delete()
+            except Exception:
+                pass
+            await warn_user(
+                message.channel, member,
+                "Slow down! You are sending messages too fast."
+            )
+            log.info(f"[SECURITY] Spam warning issued to {member}")
+            await bot.process_commands(message)
+            return
+
+    await bot.process_commands(message)
+
+# ── !securitystart ────────────────────────────────────────────────────────────
+@bot.command(name="securitystart")
+@commands.has_permissions(administrator=True)
+async def security_start(ctx):
+    global security_active
+    security_active = True
+    e = discord.Embed(color=RED)
+    e.description = (
+        "```ansi\n"
+        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
+        "\u001b[1;31m  ║      🛡️   S E C U R I T Y  O N       ║\u001b[0m\n"
+        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
+        "```\n"
+        "```ansi\n"
+        "\u001b[1;32m  ●  Anti-spam          ACTIVE\u001b[0m\n"
+        "\u001b[1;32m  ●  Invite filter       ACTIVE\u001b[0m\n"
+        "\u001b[1;32m  ●  Anti-nuke           ACTIVE\u001b[0m\n"
+        "\n"
+        "\u001b[2;37m  Allowed invites  ─  Owner · Developer · Mod\u001b[0m\n"
+        "\u001b[2;37m  Spam limit       ─  8 msgs / 5 seconds\u001b[0m\n"
+        "\u001b[2;37m  Nuke threshold   ─  3 deletes / 10 seconds\u001b[0m\n"
+        "```"
+    )
+    e.set_footer(text="MISERY © 2025  ·  Security System")
+    await ctx.send(embed=e)
+    log.info(f"[SECURITY] Started by {ctx.author}")
+
+# ── !securitystop ─────────────────────────────────────────────────────────────
+@bot.command(name="securitystop")
+@commands.has_permissions(administrator=True)
+async def security_stop(ctx):
+    global security_active
+    security_active = False
+    e = discord.Embed(color=0x555555)
+    e.description = (
+        "```ansi\n"
+        "\u001b[2;37m  ╔══════════════════════════════════════╗\u001b[0m\n"
+        "\u001b[2;37m  ║      🔴   S E C U R I T Y  O F F     ║\u001b[0m\n"
+        "\u001b[2;37m  ╚══════════════════════════════════════╝\u001b[0m\n"
+        "\u001b[2;37m  All security modules disabled.          \u001b[0m\n"
+        "```"
+    )
+    e.set_footer(text="MISERY © 2025  ·  Security System")
+    await ctx.send(embed=e)
+    log.info(f"[SECURITY] Stopped by {ctx.author}")
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  EMBED MAP
 # ─────────────────────────────────────────────────────────────────────────────
 EMBED_MAP = {
