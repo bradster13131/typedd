@@ -346,7 +346,7 @@ def embed_reselling():
     e.set_footer(text="MISERY © 2025  ·  Reselling")
     return e
 
-def embed_emulator():
+def embed_emulator(open_ticket_mention=""):
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
@@ -378,12 +378,12 @@ def embed_emulator():
         "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
         "```\n"
         "\n"
-        f"**[🎫 Open a Purchase Ticket](https://discord.com/channels/1514452472939413545/{TICKET_CHANNEL_ID})**"
+        f"**📩  To purchase, go to {open_ticket_mention or '`#open-ticket`'} and click Purchase**"
     )
     e.set_footer(text="MISERY © 2025  ·  Vanguard Emulator")
     return e
 
-def embed_internal():
+def embed_internal(open_ticket_mention=""):
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
@@ -411,7 +411,7 @@ def embed_internal():
         "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
         "```\n"
         "\n"
-        f"**[🎫 Open a Purchase Ticket](https://discord.com/channels/1514452472939413545/{TICKET_CHANNEL_ID})**"
+        f"**📩  To purchase, go to {open_ticket_mention or '`#open-ticket`'} and click Purchase**"
     )
     e.set_footer(text="MISERY © 2025  ·  Internal Cheat")
     return e
@@ -621,11 +621,18 @@ async def build(ctx):
     await dm("✅  Channels built.")
 
     # 4. Send embeds
+    open_ticket_ch = key_to_channel.get("openticket")
+    open_ticket_mention = open_ticket_ch.mention if open_ticket_ch else "`#open-ticket`"
+
     for key, fn in EMBED_MAP.items():
         ch_obj = key_to_channel.get(key)
         if ch_obj:
             try:
-                await ch_obj.send(embed=fn(), file=logo_file())
+                if key in ("emulator", "internal"):
+                    embed = fn(open_ticket_mention)
+                else:
+                    embed = fn()
+                await ch_obj.send(embed=embed, file=logo_file())
                 log.info(f"Embed sent → {key}")
             except Exception as ex:
                 log.error(f"Embed error [{key}]: {ex}")
