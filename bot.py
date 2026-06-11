@@ -530,9 +530,10 @@ MOD_ROLE_ID       = 1514460200554463232
 MEMBER_ROLE_ID    = 1514460210419204258
 ALLOWED_INVITE_ROLES = {OWNER_ROLE_ID, DEVELOPER_ROLE_ID, MOD_ROLE_ID}
 
-security_active   = False
-spam_tracker      = {}
-nuke_tracker      = {}
+security_active      = False
+spam_tracker         = {}
+nuke_tracker         = {}
+open_ticket_ch_id    = None   # cached after !build so mentions always resolve
 
 SPAM_LIMIT        = 8
 SPAM_WINDOW       = 5
@@ -867,7 +868,10 @@ async def build(ctx):
 
     await dm("✅  Channels built.")
 
+    global open_ticket_ch_id
     open_ticket_ch = key_to_channel.get("openticket")
+    if open_ticket_ch:
+        open_ticket_ch_id = open_ticket_ch.id
     open_ticket_mention = open_ticket_ch.mention if open_ticket_ch else "`#open-ticket`"
 
     for key, fn in EMBED_MAP.items():
@@ -896,6 +900,23 @@ async def build(ctx):
     await dm("☠️  **MISERY** build complete! Everything is live.")
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  HELPER — always returns a clickable mention for the open-ticket channel
+# ─────────────────────────────────────────────────────────────────────────────
+def resolve_open_ticket_mention(guild):
+    """Return a proper Discord channel mention (<#id>) for the open-ticket channel."""
+    # 1. Use cached ID from last !build
+    if open_ticket_ch_id:
+        ch_obj = guild.get_channel(open_ticket_ch_id)
+        if ch_obj:
+            return ch_obj.mention
+    # 2. Fallback: search by name, skip ticket-logs
+    for c in guild.text_channels:
+        name = c.name.lower()
+        if "ticket" in name and "log" not in name and "staff" not in name:
+            return c.mention
+    return "`#open-ticket`"
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  !add1  ─  update misery-emulator embed
 # ─────────────────────────────────────────────────────────────────────────────
 @bot.command(name="add1")
@@ -913,10 +934,7 @@ async def add1(ctx):
 
     ow = build_overwrites(guild, None, "STAFF", role_map)
 
-    open_ticket_ch = discord.utils.find(
-        lambda c: "open-ticket" in c.name.lower(), guild.text_channels
-    )
-    open_ticket_mention = open_ticket_ch.mention if open_ticket_ch else "`#open-ticket`"
+    open_ticket_mention = resolve_open_ticket_mention(guild)
 
     status_msg = await ctx.send("⚙️  Updating emulator channel...")
 
@@ -968,10 +986,7 @@ async def add2(ctx):
 
     ow = build_overwrites(guild, None, "STAFF", role_map)
 
-    open_ticket_ch = discord.utils.find(
-        lambda c: "open-ticket" in c.name.lower(), guild.text_channels
-    )
-    open_ticket_mention = open_ticket_ch.mention if open_ticket_ch else "`#open-ticket`"
+    open_ticket_mention = resolve_open_ticket_mention(guild)
 
     status_msg = await ctx.send("⚙️  Adding channels...")
 
