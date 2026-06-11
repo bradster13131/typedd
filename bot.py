@@ -134,20 +134,40 @@ def build_overwrites(guild, read_key, write_key, role_map):
     read_roles  = resolve_group(read_key)
     write_roles = resolve_group(write_key)
     ow = {}
+
+    # read_key is set → channel is restricted to those roles only
     if read_roles is not None:
         ow[guild.default_role] = discord.PermissionOverwrite(view_channel=False, send_messages=False)
         for rn in read_roles:
             r = role_map.get(rn)
             if r:
                 can_write = bool(write_roles and rn in write_roles)
-                ow[r] = discord.PermissionOverwrite(view_channel=True, send_messages=can_write, read_message_history=True)
+                ow[r] = discord.PermissionOverwrite(
+                    view_channel=True, send_messages=can_write, read_message_history=True
+                )
     else:
-        if write_roles:
-            ow[guild.default_role] = discord.PermissionOverwrite(view_channel=True, send_messages=False, read_message_history=True)
+        # read_key is None → everyone can see the channel
+        if write_roles is None:
+            # No write restriction either → everyone can read and write freely
+            ow[guild.default_role] = discord.PermissionOverwrite(
+                view_channel=True, send_messages=True, read_message_history=True
+            )
+        elif write_roles == ALL_NAMES:
+            # write="ALL" → literally everyone (including @everyone) can send messages
+            ow[guild.default_role] = discord.PermissionOverwrite(
+                view_channel=True, send_messages=True, read_message_history=True
+            )
+        else:
+            # write restricted to specific roles, everyone can only read
+            ow[guild.default_role] = discord.PermissionOverwrite(
+                view_channel=True, send_messages=False, read_message_history=True
+            )
             for rn in write_roles:
                 r = role_map.get(rn)
                 if r:
-                    ow[r] = discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True)
+                    ow[r] = discord.PermissionOverwrite(
+                        view_channel=True, send_messages=True, read_message_history=True
+                    )
     return ow
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -449,9 +469,9 @@ class TicketView(discord.ui.View):
             "```"
         )
         e.set_footer(text="MISERY © 2025  ·  Purchase")
+        e.description += f"\n\n**[🎫 Click here to open a purchase ticket]({TICKET_CHANNEL_URL})**"
         await interaction.response.send_message(
             embed=e,
-            content=f"🛒  **Purchase here →** {TICKET_CHANNEL_URL}",
             ephemeral=True,
         )
 
