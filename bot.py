@@ -549,8 +549,56 @@ class CloseView(discord.ui.View):
             return
         await interaction.response.send_message("🔒  Closing ticket in 3 seconds...")
         log.info(f"Ticket closed: {interaction.channel.name} by {interaction.user}")
+
+        # ── Collect ticket info before deletion ───────────────────────────
+        ticket_name   = interaction.channel.name
+        closed_by     = interaction.user
+        guild         = interaction.guild
+        ticket_ch     = interaction.channel
+
+        # Grab first 40 messages for the transcript snippet
+        messages = []
+        async for msg in ticket_ch.history(limit=40, oldest_first=True):
+            if not msg.author.bot:
+                messages.append(f"{msg.author.name}: {msg.content[:200]}")
+
         await asyncio.sleep(3)
         await interaction.channel.delete()
+
+        # ── Post to ticket-logs ───────────────────────────────────────────
+        logs_ch = discord.utils.get(guild.text_channels, name="📋-│-ᴛɪᴄᴋᴇᴛ-ʟᴏɢꜱ".lower())
+        if not logs_ch:
+            # fallback: find any channel with ticket-logs in the name
+            logs_ch = discord.utils.find(
+                lambda c: "ticket-log" in c.name.lower(), guild.text_channels
+            )
+        if logs_ch:
+            transcript = "\n".join(messages) if messages else "No messages recorded."
+            if len(transcript) > 900:
+                transcript = transcript[:900] + "\n... (truncated)"
+            e = discord.Embed(color=RED)
+            e.set_thumbnail(url=LOGO_ATTACH)
+            e.description = (
+                "```ansi\n"
+                "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
+                "\u001b[1;31m  ║        📋  T I C K E T  L O G        ║\u001b[0m\n"
+                "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
+                "```\n"
+                "```ansi\n"
+                f"\u001b[1;37m  Ticket   \u001b[0m\u001b[2;37m{ticket_name}\u001b[0m\n"
+                f"\u001b[1;37m  Closed   \u001b[0m\u001b[2;37mby {closed_by.name}\u001b[0m\n"
+                f"\u001b[1;37m  Time     \u001b[0m\u001b[2;37m<t:{int(__import__('time').time())}:F>\u001b[0m\n"
+                "```\n"
+                "```ansi\n"
+                "\u001b[1;31m  ── Transcript (last 40 msgs) ────────────\u001b[0m\n"
+                f"\u001b[2;37m{transcript}\u001b[0m\n"
+                "```"
+            )
+            e.set_footer(text="MISERY © 2025  ·  Ticket Logs")
+            try:
+                await logs_ch.send(embed=e, file=logo_file())
+            except Exception as ex:
+                log.error(f"Ticket log send failed: {ex}")
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  SECURITY SYSTEM
@@ -884,10 +932,50 @@ async def close_cmd(ctx):
     if not is_staff(ctx.author):
         await ctx.send("Only staff can close tickets.", delete_after=4)
         return
-    if any(x in ctx.channel.name for x in ("support-", "technical-")):
+    if any(x in ctx.channel.name for x in ("purchase-", "support-", "technical-")):
+        ticket_name = ctx.channel.name
+        guild       = ctx.guild
+        ticket_ch   = ctx.channel
+
+        messages = []
+        async for msg in ticket_ch.history(limit=40, oldest_first=True):
+            if not msg.author.bot:
+                messages.append(f"{msg.author.name}: {msg.content[:200]}")
+
         await ctx.send("🔒  Closing in 3 seconds...")
         await asyncio.sleep(3)
         await ctx.channel.delete()
+
+        logs_ch = discord.utils.find(
+            lambda c: "ticket-log" in c.name.lower(), guild.text_channels
+        )
+        if logs_ch:
+            transcript = "\n".join(messages) if messages else "No messages recorded."
+            if len(transcript) > 900:
+                transcript = transcript[:900] + "\n... (truncated)"
+            e = discord.Embed(color=RED)
+            e.set_thumbnail(url=LOGO_ATTACH)
+            e.description = (
+                "```ansi\n"
+                "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
+                "\u001b[1;31m  ║        📋  T I C K E T  L O G        ║\u001b[0m\n"
+                "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
+                "```\n"
+                "```ansi\n"
+                f"\u001b[1;37m  Ticket   \u001b[0m\u001b[2;37m{ticket_name}\u001b[0m\n"
+                f"\u001b[1;37m  Closed   \u001b[0m\u001b[2;37mby {ctx.author.name}\u001b[0m\n"
+                f"\u001b[1;37m  Time     \u001b[0m\u001b[2;37m<t:{int(__import__('time').time())}:F>\u001b[0m\n"
+                "```\n"
+                "```ansi\n"
+                "\u001b[1;31m  ── Transcript (last 40 msgs) ────────────\u001b[0m\n"
+                f"\u001b[2;37m{transcript}\u001b[0m\n"
+                "```"
+            )
+            e.set_footer(text="MISERY © 2025  ·  Ticket Logs")
+            try:
+                await logs_ch.send(embed=e, file=logo_file())
+            except Exception as ex:
+                log.error(f"Ticket log send failed: {ex}")
     else:
         await ctx.send("This isn't a ticket channel.", delete_after=4)
 
