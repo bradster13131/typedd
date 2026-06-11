@@ -18,7 +18,7 @@ log = logging.getLogger("MISERY")
 # ─────────────────────────────────────────────────────────────────────────────
 #  CONFIG  — all secrets from environment variables (set in Railway dashboard)
 # ─────────────────────────────────────────────────────────────────────────────
-BOT_TOKEN         = os.environ["BOT_TOKEN"]          # set in Railway → Variables
+BOT_TOKEN         = os.environ["BOT_TOKEN"]
 TICKET_CHANNEL_ID = int(os.environ.get("TICKET_CHANNEL_ID", "1514471738715537480"))
 TICKET_CHANNEL_URL = os.environ.get(
     "TICKET_CHANNEL_URL",
@@ -57,6 +57,11 @@ _SC = {
 def styled(name): return ''.join(_SC.get(c, c) for c in name.lower())
 def ch(emoji, name): return f"{emoji} │ {styled(name)}"
 def cat(emoji, name): return f"{emoji} ── {name.upper()} ──"
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  DIVIDER  — uses standard dashes, renders perfectly on all devices/mobile
+# ─────────────────────────────────────────────────────────────────────────────
+DIV = "────────────────────────────────"
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  ROLE GROUPS
@@ -167,12 +172,7 @@ def build_overwrites(guild, read_key, write_key, role_map):
     return ow
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  DIVIDER
-# ─────────────────────────────────────────────────────────────────────────────
-DIV = "▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰"
-
-# ─────────────────────────────────────────────────────────────────────────────
-#  EMBEDS  — mobile-friendly (no ANSI, small-caps headers, clean layout)
+#  EMBEDS  — mobile-safe dividers, clean layout, advanced styling
 # ─────────────────────────────────────────────────────────────────────────────
 
 def embed_announcement():
@@ -188,13 +188,13 @@ def embed_announcement():
         "```\n"
         f"**☠  ᴛʜᴇ ᴍᴏꜱᴛ ᴘᴏᴡᴇʀꜰᴜʟ ᴄʜᴇᴀᴛ ᴏɴ ᴛʜᴇ ᴍᴀʀᴋᴇᴛ  ☠**\n"
         f"*ᴜɴᴅᴇᴛᴇᴄᴛᴇᴅ · ᴜɴᴛᴏᴜᴄʜᴀʙʟᴇ · ᴜɴꜱᴛᴏᴘᴘᴀʙʟᴇ*\n\n"
-        f"```{DIV}```\n"
+        f"{DIV}\n\n"
         "**📣  ꜱᴇʀᴠᴇʀ ɴᴀᴠɪɢᴀᴛɪᴏɴ**\n\n"
-        "📣  **ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛꜱ** › Updates & news\n"
-        "📜  **ᴛᴏꜱ** › Rules you agree to\n"
-        "🔴  **ᴘʀᴏᴅᴜᴄᴛꜱ** › Browse & pricing\n"
-        f"🎫  **ᴏᴘᴇɴ-ᴛɪᴄᴋᴇᴛ** › Buy or get support\n"
-        f"```{DIV}```"
+        "→  📣  **ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛꜱ** — Updates & news\n"
+        "→  📜  **ᴛᴏꜱ** — Rules you agree to\n"
+        "→  🔴  **ᴘʀᴏᴅᴜᴄᴛꜱ** — Browse & pricing\n"
+        f"→  🎫  **ᴏᴘᴇɴ-ᴛɪᴄᴋᴇᴛ** — Buy or get support\n\n"
+        f"{DIV}"
     )
     e.set_image(url=LOGO_ATTACH)
     e.set_footer(text="MISERY © 2025  ·  Undetected. Untouchable. Unstoppable.")
@@ -203,22 +203,21 @@ def embed_announcement():
 def embed_tos():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "📜  ᴛᴇʀᴍꜱ ᴏꜰ ꜱᴇʀᴠɪᴄᴇ"
     e.description = (
-        f"```{DIV}```\n"
-        "**📜  ᴛᴇʀᴍꜱ ᴏꜰ ꜱᴇʀᴠɪᴄᴇ**\n"
-        "*By using any MISERY product you agree to all terms listed below.*\n\n"
-        f"```{DIV}```\n"
-        "**§1  ─  ɴᴏ ᴄʜᴀʀɢᴇʙᴀᴄᴋꜱ**\n"
-        "╰─›  All sales are final. Chargebacks result in a permanent ban and fraud report.\n\n"
-        "**§2  ─  ɴᴏ ʟᴇᴀᴋɪɴɢ**\n"
-        "╰─›  Do not share, redistribute or resell any software without written authorisation.\n\n"
-        "**§3  ─  ᴀᴄᴄᴏᴜɴᴛ ʀᴇꜱᴘᴏɴꜱɪʙɪʟɪᴛʏ**\n"
-        "╰─›  MISERY is not liable for bans, suspensions or losses on your game account.\n\n"
-        "**§4  ─  ʙᴜɢ ʀᴇᴘᴏʀᴛɪɴɢ**\n"
-        "╰─›  Exploiting bugs instead of reporting them = permanent ban, no refund.\n\n"
-        "**§5  ─  ꜱᴛᴀꜰꜰ ᴀᴜᴛʜᴏʀɪᴛʏ**\n"
-        "╰─›  Staff decisions are final. Arguing results in removal with no appeal.\n"
-        f"```{DIV}```"
+        f"*By using any MISERY product you agree to all terms below.*\n"
+        f"{DIV}\n\n"
+        "**§1  ·  ɴᴏ ᴄʜᴀʀɢᴇʙᴀᴄᴋꜱ**\n"
+        "→  All sales are final. Chargebacks result in a permanent ban and fraud report.\n\n"
+        "**§2  ·  ɴᴏ ʟᴇᴀᴋɪɴɢ**\n"
+        "→  Do not share, redistribute or resell any software without written authorisation.\n\n"
+        "**§3  ·  ᴀᴄᴄᴏᴜɴᴛ ʀᴇꜱᴘᴏɴꜱɪʙɪʟɪᴛʏ**\n"
+        "→  MISERY is not liable for bans, suspensions or losses on your game account.\n\n"
+        "**§4  ·  ʙᴜɢ ʀᴇᴘᴏʀᴛɪɴɢ**\n"
+        "→  Exploiting bugs instead of reporting them = permanent ban, no refund.\n\n"
+        "**§5  ·  ꜱᴛᴀꜰꜰ ᴀᴜᴛʜᴏʀɪᴛʏ**\n"
+        "→  Staff decisions are final. Arguing results in removal with no appeal.\n\n"
+        f"{DIV}"
     )
     e.set_footer(text="MISERY © 2025  ·  Terms of Service")
     return e
@@ -226,16 +225,15 @@ def embed_tos():
 def embed_changelog():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "🔥  ᴄʜᴀɴɢᴇʟᴏɢ"
     e.description = (
-        f"```{DIV}```\n"
-        "**🔥  ᴄʜᴀɴɢᴇʟᴏɢ**\n\n"
-        f"```{DIV}```\n"
-        "**▸  v1.0.0  ─  ɪɴɪᴛɪᴀʟ ʀᴇʟᴇᴀꜱᴇ**\n"
-        "╰─›  Vanguard Emulator launched\n"
-        "╰─›  Internal Cheat launched\n"
-        "╰─›  Auth system online\n\n"
-        "*Staff will post future updates here.*\n"
-        f"```{DIV}```"
+        f"{DIV}\n\n"
+        "**▸  v1.0.0  ·  ɪɴɪᴛɪᴀʟ ʀᴇʟᴇᴀꜱᴇ**\n"
+        "→  Vanguard Emulator launched\n"
+        "→  Internal Cheat launched\n"
+        "→  Auth system online\n\n"
+        "*Staff will post future updates here.*\n\n"
+        f"{DIV}"
     )
     e.set_footer(text="MISERY © 2025  ·  Changelog")
     return e
@@ -243,17 +241,16 @@ def embed_changelog():
 def embed_status():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "⚡  ʟɪᴠᴇ ꜱᴛᴀᴛᴜꜱ"
     e.description = (
-        f"```{DIV}```\n"
-        "**⚡  ʟɪᴠᴇ ꜱᴛᴀᴛᴜꜱ**\n\n"
-        f"```{DIV}```\n"
-        "🟢  **ᴍɪꜱᴇʀʏ ᴇᴍᴜʟᴀᴛᴏʀ** ─── ONLINE\n"
-        "🟢  **ᴍɪꜱᴇʀʏ ɪɴᴛᴇʀɴᴀʟ** ─── ONLINE\n"
-        "🟢  **ᴀᴜᴛʜ / ʟᴏᴀᴅᴇʀ** ──── ONLINE\n"
-        "🟢  **ᴜᴘᴅᴀᴛᴇ ꜱᴇʀᴠᴇʀ** ──── ONLINE\n"
-        "🟢  **ᴀᴘɪ** ───────────── ONLINE\n"
-        "🟢  **ʙʏᴘᴀꜱꜱ ᴄᴏʀᴇ** ───── ONLINE\n"
-        f"```{DIV}```"
+        f"{DIV}\n\n"
+        "🟢  **ᴍɪꜱᴇʀʏ ᴇᴍᴜʟᴀᴛᴏʀ** — ONLINE\n"
+        "🟢  **ᴍɪꜱᴇʀʏ ɪɴᴛᴇʀɴᴀʟ** — ONLINE\n"
+        "🟢  **ᴀᴜᴛʜ / ʟᴏᴀᴅᴇʀ** — ONLINE\n"
+        "🟢  **ᴜᴘᴅᴀᴛᴇ ꜱᴇʀᴠᴇʀ** — ONLINE\n"
+        "🟢  **ᴀᴘɪ** — ONLINE\n"
+        "🟢  **ʙʏᴘᴀꜱꜱ ᴄᴏʀᴇ** — ONLINE\n\n"
+        f"{DIV}"
     )
     e.set_footer(text="MISERY © 2025  ·  Status last updated by staff")
     return e
@@ -261,16 +258,15 @@ def embed_status():
 def embed_vouches():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "⭐  ᴠᴏᴜᴄʜᴇꜱ"
     e.description = (
-        f"```{DIV}```\n"
-        "**⭐  ᴠᴏᴜᴄʜᴇꜱ**\n"
-        "*Real reviews from real customers.*\n\n"
-        f"```{DIV}```\n"
+        f"*Real reviews from real customers.*\n"
+        f"{DIV}\n\n"
         "**ʜᴏᴡ ᴛᴏ ᴠᴏᴜᴄʜ**\n"
-        "╰─›  Must be a verified customer\n"
-        "╰─›  Include product + duration purchased\n"
-        "╰─›  Fake vouches = permanent ban\n"
-        f"```{DIV}```"
+        "→  Must be a verified customer\n"
+        "→  Include product + duration purchased\n"
+        "→  Fake vouches = permanent ban\n\n"
+        f"{DIV}"
     )
     e.set_footer(text="MISERY © 2025  ·  Vouches")
     return e
@@ -278,16 +274,15 @@ def embed_vouches():
 def embed_media():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "🎥  ᴍᴇᴅɪᴀ"
     e.description = (
-        f"```{DIV}```\n"
-        "**🎥  ᴍᴇᴅɪᴀ**\n"
-        "*Clips, screenshots & showcases.*\n\n"
-        f"```{DIV}```\n"
+        f"*Clips, screenshots & showcases.*\n"
+        f"{DIV}\n\n"
         "**ꜱᴜʙᴍɪꜱꜱɪᴏɴ ʀᴜʟᴇꜱ**\n"
-        "╰─›  Must feature MISERY products only\n"
-        "╰─›  No watermarks from other providers\n"
-        "╰─›  Staff may remove off-topic content\n"
-        f"```{DIV}```"
+        "→  Must feature MISERY products only\n"
+        "→  No watermarks from other providers\n"
+        "→  Staff may remove off-topic content\n\n"
+        f"{DIV}"
     )
     e.set_footer(text="MISERY © 2025  ·  Media")
     return e
@@ -295,16 +290,15 @@ def embed_media():
 def embed_reselling():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "🔗  ʀᴇꜱᴇʟʟɪɴɢ"
     e.description = (
-        f"```{DIV}```\n"
-        "**🔗  ʀᴇꜱᴇʟʟɪɴɢ**\n\n"
-        f"```{DIV}```\n"
+        f"{DIV}\n\n"
         "**ɪɴᴛᴇʀᴇꜱᴛᴇᴅ ɪɴ ʀᴇꜱᴇʟʟɪɴɢ ᴍɪꜱᴇʀʏ?**\n"
-        "╰─›  Open a ticket to apply\n"
-        "╰─›  Must have an established community\n"
-        "╰─›  Reseller pricing available on request\n"
-        "╰─›  Unauthorised reselling = permanent ban\n"
-        f"```{DIV}```"
+        "→  Open a ticket to apply\n"
+        "→  Must have an established community\n"
+        "→  Reseller pricing available on request\n"
+        "→  Unauthorised reselling = permanent ban\n\n"
+        f"{DIV}"
     )
     e.set_footer(text="MISERY © 2025  ·  Reselling")
     return e
@@ -312,29 +306,29 @@ def embed_reselling():
 def embed_emulator(open_ticket_mention=""):
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "🔴  ᴍɪꜱᴇʀʏ — ᴠᴀɴɢᴜᴀʀᴅ ᴇᴍᴜʟᴀᴛᴏʀ"
     e.description = (
-        f"```{DIV}```\n"
-        "**🔴  ᴍɪꜱᴇʀʏ ─ ᴠᴀɴɢᴜᴀʀᴅ ᴇᴍᴜʟᴀᴛᴏʀ**\n"
-        "*The #1 Vanguard bypass on the market. Undetected · Updated within hours.*\n\n"
-        f"```{DIV}```\n"
+        f"*The #1 Vanguard bypass on the market. Undetected · Updated within hours.*\n"
+        f"{DIV}\n\n"
         "**🛡  ᴄᴏᴍᴘᴀᴛɪʙɪʟɪᴛʏ**\n"
-        "╰─›  Windows 10 & 11\n"
-        "╰─›  All Motherboards\n"
-        "╰─›  All CPUs & GPUs\n"
-        "╰─›  HVCI On or Off\n\n"
+        "→  Windows 10 & 11\n"
+        "→  All Motherboards\n"
+        "→  All CPUs & GPUs\n"
+        "→  HVCI On or Off\n\n"
         "**⚔  ꜰᴇᴀᴛᴜʀᴇꜱ**\n"
-        "╰─›  Play completely without anticheat\n"
-        "╰─›  Bypasses VAN 152 & -102 errors\n"
-        "╰─›  Bypasses VALORANT 5\n"
-        "╰─›  No game restart required\n"
-        "╰─›  Bypasses HVCI · TPM · Secure Boot\n"
-        "╰─›  One-click Vanguard emulation\n\n"
+        "→  Play completely without anticheat\n"
+        "→  Bypasses VAN 152 & -102 errors\n"
+        "→  Bypasses VALORANT 5\n"
+        "→  No game restart required\n"
+        "→  Bypasses HVCI · TPM · Secure Boot\n"
+        "→  One-click Vanguard emulation\n\n"
+        f"{DIV}\n\n"
         "**💰  ᴘʀɪᴄɪɴɢ**\n"
-        "╰─›  3 Days ─── £4.99\n"
-        "╰─›  1 Week ─── £14.99\n"
-        "╰─›  1 Month ── £29.99\n"
-        "╰─›  Lifetime ─ £249.99\n"
-        f"```{DIV}```\n"
+        "→  3 Days ——— £4.99\n"
+        "→  1 Week ——— £14.99\n"
+        "→  1 Month —— £29.99\n"
+        "→  Lifetime — £249.99\n\n"
+        f"{DIV}\n\n"
         f"**📩  To purchase, open a ticket in {open_ticket_mention or '`#open-ticket`'}**"
     )
     e.set_footer(text="MISERY © 2025  ·  Vanguard Emulator")
@@ -343,25 +337,25 @@ def embed_emulator(open_ticket_mention=""):
 def embed_internal(open_ticket_mention=""):
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "🔴  ᴍɪꜱᴇʀʏ — ɪɴᴛᴇʀɴᴀʟ ᴄʜᴇᴀᴛ"
     e.description = (
-        f"```{DIV}```\n"
-        "**🔴  ᴍɪꜱᴇʀʏ ─ ɪɴᴛᴇʀɴᴀʟ ᴄʜᴇᴀᴛ**\n"
-        "*Flagship internal. Full-featured. Undetected across all anticheat systems.*\n\n"
-        f"```{DIV}```\n"
+        f"*Flagship internal. Full-featured. Undetected across all anticheat systems.*\n"
+        f"{DIV}\n\n"
         "**⚔  ꜰᴇᴀᴛᴜʀᴇꜱ**\n"
-        "╰─›  Aimbot ─ bone priority · smooth · FOV\n"
-        "╰─›  ESP ─ box · skeleton · health · dist\n"
-        "╰─›  Triggerbot + silent aim\n"
-        "╰─›  Radar hack\n"
-        "╰─›  No-recoil & no-spread\n"
-        "╰─›  Config save & cloud sync\n"
-        "╰─›  HWID spoofer included\n\n"
+        "→  Aimbot — bone priority · smooth · FOV\n"
+        "→  ESP — box · skeleton · health · dist\n"
+        "→  Triggerbot + silent aim\n"
+        "→  Radar hack\n"
+        "→  No-recoil & no-spread\n"
+        "→  Config save & cloud sync\n"
+        "→  HWID spoofer included\n\n"
+        f"{DIV}\n\n"
         "**💰  ᴘʀɪᴄɪɴɢ**\n"
-        "╰─›  3 Days ─── £9.99\n"
-        "╰─›  1 Week ─── £19.99\n"
-        "╰─›  1 Month ── £49.99\n"
-        "╰─›  Lifetime ─ £349.99\n"
-        f"```{DIV}```\n"
+        "→  3 Days ——— £9.99\n"
+        "→  1 Week ——— £19.99\n"
+        "→  1 Month —— £49.99\n"
+        "→  Lifetime — £349.99\n\n"
+        f"{DIV}\n\n"
         f"**📩  To purchase, open a ticket in {open_ticket_mention or '`#open-ticket`'}**"
     )
     e.set_footer(text="MISERY © 2025  ·  Internal Cheat")
@@ -369,16 +363,15 @@ def embed_internal(open_ticket_mention=""):
 
 def embed_ticket_panel():
     e = discord.Embed(color=RED)
+    e.title = "🎫  ᴏᴘᴇɴ ᴀ ᴛɪᴄᴋᴇᴛ"
     e.description = (
-        f"```{DIV}```\n"
-        "**🎫  ᴏᴘᴇɴ ᴛɪᴄᴋᴇᴛ**\n"
-        "*Select a category below to open a private ticket with our staff.*\n\n"
-        f"```{DIV}```\n"
+        f"*Select a category below to open a private ticket with our staff.*\n"
+        f"{DIV}\n\n"
         "**ᴄᴀᴛᴇɢᴏʀɪᴇꜱ**\n"
-        "🛒  **ᴘᴜʀᴄʜᴀꜱᴇ** ─ Buy or upgrade a license\n"
-        "🛠  **ꜱᴜᴘᴘᴏʀᴛ** ─ Account & general help\n"
-        "⚙  **ᴛᴇᴄʜɴɪᴄᴀʟ** ─ Loader · crash · inject\n"
-        f"```{DIV}```"
+        "🛒  **ᴘᴜʀᴄʜᴀꜱᴇ** — Buy or upgrade a license\n"
+        "🛠  **ꜱᴜᴘᴘᴏʀᴛ** — Account & general help\n"
+        "⚙  **ᴛᴇᴄʜɴɪᴄᴀʟ** — Loader · crash · inject\n\n"
+        f"{DIV}"
     )
     e.set_image(url=LOGO_ATTACH)
     e.set_footer(text="MISERY © 2025  ·  Do not abuse the ticket system.")
@@ -454,13 +447,13 @@ class TicketView(discord.ui.View):
 
         e = discord.Embed(color=RED)
         e.set_thumbnail(url=LOGO_ATTACH)
+        e.title = title
         e.description = (
-            f"```{DIV}```\n"
-            f"**{title}**\n\n"
+            f"{DIV}\n\n"
             f"**ᴡᴇʟᴄᴏᴍᴇ, {member.name}** — staff will be with you shortly.\n\n"
-            f"╰─›  {prompt}\n\n"
-            "*Staff can close this ticket with the button below.*\n"
-            f"```{DIV}```"
+            f"→  {prompt}\n\n"
+            "*Staff can close this ticket with the button below.*\n\n"
+            f"{DIV}"
         )
         e.set_footer(text="MISERY © 2025  ·  Support Ticket")
 
@@ -510,13 +503,12 @@ class CloseView(discord.ui.View):
                 transcript = transcript[:900] + "\n... (truncated)"
             e = discord.Embed(color=RED)
             e.set_thumbnail(url=LOGO_ATTACH)
+            e.title = "📋  ᴛɪᴄᴋᴇᴛ ʟᴏɢ"
             e.description = (
-                f"```{DIV}```\n"
-                "**📋  ᴛɪᴄᴋᴇᴛ ʟᴏɢ**\n\n"
-                f"```{DIV}```\n"
-                f"**ᴛɪᴄᴋᴇᴛ** ─ {ticket_name}\n"
-                f"**ᴄʟᴏꜱᴇᴅ ʙʏ** ─ {closed_by.name}\n"
-                f"**ᴛɪᴍᴇ** ─ <t:{int(__import__('time').time())}:F>\n\n"
+                f"{DIV}\n\n"
+                f"**ᴛɪᴄᴋᴇᴛ** — {ticket_name}\n"
+                f"**ᴄʟᴏꜱᴇᴅ ʙʏ** — {closed_by.name}\n"
+                f"**ᴛɪᴍᴇ** — <t:{int(__import__('time').time())}:F>\n\n"
                 f"**ᴛʀᴀɴꜱᴄʀɪᴘᴛ** *(last 40 msgs)*\n"
                 f"```{transcript}```"
             )
@@ -554,12 +546,12 @@ def has_any_role(member, role_ids):
 
 async def warn_user(channel, member, reason):
     e = discord.Embed(color=RED)
+    e.title = "⚠️  ᴡᴀʀɴɪɴɢ"
     e.description = (
-        f"```{DIV}```\n"
-        "**⚠️  ᴡᴀʀɴɪɴɢ**\n\n"
-        f"**ᴜꜱᴇʀ** ─ {member.name}\n"
-        f"╰─›  {reason}\n"
-        f"```{DIV}```"
+        f"{DIV}\n\n"
+        f"**ᴜꜱᴇʀ** — {member.name}\n"
+        f"→  {reason}\n\n"
+        f"{DIV}"
     )
     e.set_footer(text="MISERY © 2025  ·  Security System")
     try:
@@ -697,17 +689,16 @@ async def security_start(ctx):
     global security_active
     security_active = True
     e = discord.Embed(color=RED)
+    e.title = "🛡️  ꜱᴇᴄᴜʀɪᴛʏ ᴏɴ"
     e.description = (
-        f"```{DIV}```\n"
-        "**🛡️  ꜱᴇᴄᴜʀɪᴛʏ ᴏɴ**\n\n"
-        f"```{DIV}```\n"
-        "🟢  **ᴀɴᴛɪ-ꜱᴘᴀᴍ** ─ ACTIVE\n"
-        "🟢  **ɪɴᴠɪᴛᴇ ꜰɪʟᴛᴇʀ** ─ ACTIVE\n"
-        "🟢  **ᴀɴᴛɪ-ɴᴜᴋᴇ** ─ ACTIVE\n\n"
-        "*Allowed invites ─ Owner · Developer · Mod*\n"
-        "*Spam limit ─ 8 msgs / 5 seconds*\n"
-        "*Nuke threshold ─ 3 deletes / 10 seconds*\n"
-        f"```{DIV}```"
+        f"{DIV}\n\n"
+        "🟢  **ᴀɴᴛɪ-ꜱᴘᴀᴍ** — ACTIVE\n"
+        "🟢  **ɪɴᴠɪᴛᴇ ꜰɪʟᴛᴇʀ** — ACTIVE\n"
+        "🟢  **ᴀɴᴛɪ-ɴᴜᴋᴇ** — ACTIVE\n\n"
+        "→  Allowed invites — Owner · Developer · Mod\n"
+        "→  Spam limit — 8 msgs / 5 seconds\n"
+        "→  Nuke threshold — 3 deletes / 10 seconds\n\n"
+        f"{DIV}"
     )
     e.set_footer(text="MISERY © 2025  ·  Security System")
     await ctx.send(embed=e)
@@ -719,11 +710,11 @@ async def security_stop(ctx):
     global security_active
     security_active = False
     e = discord.Embed(color=0x555555)
+    e.title = "🔴  ꜱᴇᴄᴜʀɪᴛʏ ᴏꜰꜰ"
     e.description = (
-        f"```{DIV}```\n"
-        "**🔴  ꜱᴇᴄᴜʀɪᴛʏ ᴏꜰꜰ**\n\n"
-        "*All security modules disabled.*\n"
-        f"```{DIV}```"
+        f"{DIV}\n\n"
+        "*All security modules disabled.*\n\n"
+        f"{DIV}"
     )
     e.set_footer(text="MISERY © 2025  ·  Security System")
     await ctx.send(embed=e)
@@ -735,43 +726,43 @@ async def security_stop(ctx):
 def embed_internal_v2(open_ticket_mention=""):
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "🔴  ᴍɪꜱᴇʀʏ — ɪɴᴛᴇʀɴᴀʟ ᴄʜᴇᴀᴛ"
     e.description = (
-        f"```{DIV}```\n"
-        "**🔴  ᴍɪꜱᴇʀʏ ─ ɪɴᴛᴇʀɴᴀʟ ᴄʜᴇᴀᴛ**\n"
-        "*Flagship internal. Undetected.*\n\n"
-        f"```{DIV}```\n"
+        f"*Flagship internal. Undetected.*\n"
+        f"{DIV}\n\n"
         "**🎯  ᴀɪᴍʙᴏᴛ**\n"
-        "╰─›  Enable · Calc Spread · 360 FOV\n"
-        "╰─›  Visible Check · Recoil Control\n"
-        "╰─›  Draw FOV · FOV RGB · Smoothness\n"
-        "╰─›  FOV Value · Aim Key · Target Bone\n\n"
+        "→  Enable · Calc Spread · 360 FOV\n"
+        "→  Visible Check · Recoil Control\n"
+        "→  Draw FOV · FOV RGB · Smoothness\n"
+        "→  FOV Value · Aim Key · Target Bone\n\n"
         "**👁  ᴠɪꜱᴜᴀʟꜱ**\n"
-        "╰─›  Skeleton · Box 3D · Box 2D\n"
-        "╰─›  Box With Health · Box Corner · Head Box\n"
-        "╰─›  Snapline · Health Bar · Agent · Distance\n"
-        "╰─›  Weapon · Player Name · Rank · Ammo\n"
-        "╰─›  WireFrame · Chams · Chams RGB · Radar\n"
-        "╰─›  Sound ESP · Spectator · Spike Timer\n"
-        "╰─›  Abilities · Visible Check\n\n"
+        "→  Skeleton · Box 3D · Box 2D\n"
+        "→  Box With Health · Box Corner · Head Box\n"
+        "→  Snapline · Health Bar · Agent · Distance\n"
+        "→  Weapon · Player Name · Rank · Ammo\n"
+        "→  WireFrame · Chams · Chams RGB · Radar\n"
+        "→  Sound ESP · Spectator · Spike Timer\n"
+        "→  Abilities · Visible Check\n\n"
         "**⚙  ᴍɪꜱᴄ**\n"
-        "╰─›  Skip Tutorial · FOV Changer\n"
-        "╰─›  Aspect Ratio · Watermark · Bullet Tracers\n"
-        "╰─›  View Model · Damage Counter · Hit Sound\n"
-        "╰─›  China Hat · Third Person · Hit Sound Sel\n\n"
+        "→  Skip Tutorial · FOV Changer\n"
+        "→  Aspect Ratio · Watermark · Bullet Tracers\n"
+        "→  View Model · Damage Counter · Hit Sound\n"
+        "→  China Hat · Third Person · Hit Sound Sel\n\n"
         "**🎨  ꜱᴋɪɴꜱ**\n"
-        "╰─›  Unlock All Skins · Finishers\n"
-        "╰─›  Only Last Kill · Gun Buddy\n\n"
+        "→  Unlock All Skins · Finishers\n"
+        "→  Only Last Kill · Gun Buddy\n\n"
         "**🎨  ᴄᴏʟᴏᴜʀꜱ**\n"
-        "╰─›  ESP Visible/Hidden · Health Colors\n"
-        "╰─›  Chams · Watermark · Glow Intensity\n\n"
+        "→  ESP Visible/Hidden · Health Colors\n"
+        "→  Chams · Watermark · Glow Intensity\n\n"
         "**💾  ᴄᴏɴꜰɪɢꜱ**\n"
-        "╰─›  Clipboard Import/Export · Save/Load\n"
-        "╰─›  UNLOAD · Menu Key\n\n"
+        "→  Clipboard Import/Export · Save/Load\n"
+        "→  UNLOAD · Menu Key\n\n"
+        f"{DIV}\n\n"
         "**💰  ᴘʀɪᴄɪɴɢ**\n"
-        "╰─›  3 Days ─── $20\n"
-        "╰─›  1 Week ─── $30\n"
-        "╰─›  1 Month ── $60\n"
-        f"```{DIV}```\n"
+        "→  3 Days ——— $20\n"
+        "→  1 Week ——— $30\n"
+        "→  1 Month —— $60\n\n"
+        f"{DIV}\n\n"
         f"**📩  To purchase, open a ticket in {open_ticket_mention or '`#open-ticket`'}**"
     )
     e.set_footer(text="MISERY © 2025  ·  Internal Cheat")
@@ -783,28 +774,28 @@ def embed_internal_v2(open_ticket_mention=""):
 def embed_skinchanger(open_ticket_mention=""):
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "🎨  ᴍɪꜱᴇʀʏ — ꜱᴋɪɴ ᴄʜᴀɴɢᴇʀ"
     e.description = (
-        f"```{DIV}```\n"
-        "**🎨  ᴍɪꜱᴇʀʏ ─ ꜱᴋɪɴ ᴄʜᴀɴɢᴇʀ**\n"
-        "*Change any skin. Undetected.*\n\n"
-        f"```{DIV}```\n"
+        f"*Change any skin. Undetected.*\n"
+        f"{DIV}\n\n"
         "**🛡  ᴄᴏᴍᴘᴀᴛɪʙɪʟɪᴛʏ**\n"
-        "╰─›  Windows 10 & 11\n"
-        "╰─›  All Motherboards & CPUs\n"
-        "╰─›  HVCI On or Off\n\n"
+        "→  Windows 10 & 11\n"
+        "→  All Motherboards & CPUs\n"
+        "→  HVCI On or Off\n\n"
         "**⚔  ꜰᴇᴀᴛᴜʀᴇꜱ**\n"
-        "╰─›  Unlock All Skins\n"
-        "╰─›  Unlock All Colours\n"
-        "╰─›  Unlock All Buddies\n"
-        "╰─›  Unlock All Sprays & Cards\n"
-        "╰─›  Finishers & Gun Buddies\n"
-        "╰─›  Client-sided · Easy one-click use\n\n"
+        "→  Unlock All Skins\n"
+        "→  Unlock All Colours\n"
+        "→  Unlock All Buddies\n"
+        "→  Unlock All Sprays & Cards\n"
+        "→  Finishers & Gun Buddies\n"
+        "→  Client-sided · Easy one-click use\n\n"
+        f"{DIV}\n\n"
         "**💰  ᴘʀɪᴄɪɴɢ**\n"
-        "╰─›  3 Days ─── $10\n"
-        "╰─›  1 Week ─── $20\n"
-        "╰─›  1 Month ── $50\n"
-        "╰─›  Lifetime ─ $100\n"
-        f"```{DIV}```\n"
+        "→  3 Days ——— $10\n"
+        "→  1 Week ——— $20\n"
+        "→  1 Month —— $50\n"
+        "→  Lifetime — $100\n\n"
+        f"{DIV}\n\n"
         f"**📩  To purchase, open a ticket in {open_ticket_mention or '`#open-ticket`'}**"
     )
     e.set_footer(text="MISERY © 2025  ·  Skin Changer")
@@ -966,12 +957,12 @@ async def add2(ctx):
     await asyncio.sleep(0.5)
 
     e = discord.Embed(color=RED)
+    e.title = "✅  ᴀᴅᴅ2 ᴄᴏᴍᴘʟᴇᴛᴇ"
     e.description = (
-        f"```{DIV}```\n"
-        "**✅  ᴀᴅᴅ2 ᴄᴏᴍᴘʟᴇᴛᴇ**\n\n"
-        "🟢  **misery-internal** ─ updated\n"
-        "🟢  **misery-skinchanger** ─ live\n"
-        f"```{DIV}```"
+        f"{DIV}\n\n"
+        "🟢  **misery-internal** — updated\n"
+        "🟢  **misery-skinchanger** — live\n\n"
+        f"{DIV}"
     )
     e.set_footer(text="MISERY © 2025  ·  !add2")
     await status_msg.delete()
@@ -1009,13 +1000,12 @@ async def close_cmd(ctx):
                 transcript = transcript[:900] + "\n... (truncated)"
             e = discord.Embed(color=RED)
             e.set_thumbnail(url=LOGO_ATTACH)
+            e.title = "📋  ᴛɪᴄᴋᴇᴛ ʟᴏɢ"
             e.description = (
-                f"```{DIV}```\n"
-                "**📋  ᴛɪᴄᴋᴇᴛ ʟᴏɢ**\n\n"
-                f"```{DIV}```\n"
-                f"**ᴛɪᴄᴋᴇᴛ** ─ {ticket_name}\n"
-                f"**ᴄʟᴏꜱᴇᴅ ʙʏ** ─ {ctx.author.name}\n"
-                f"**ᴛɪᴍᴇ** ─ <t:{int(__import__('time').time())}:F>\n\n"
+                f"{DIV}\n\n"
+                f"**ᴛɪᴄᴋᴇᴛ** — {ticket_name}\n"
+                f"**ᴄʟᴏꜱᴇᴅ ʙʏ** — {ctx.author.name}\n"
+                f"**ᴛɪᴍᴇ** — <t:{int(__import__('time').time())}:F>\n\n"
                 f"**ᴛʀᴀɴꜱᴄʀɪᴘᴛ** *(last 40 msgs)*\n"
                 f"```{transcript}```"
             )
