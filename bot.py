@@ -904,15 +904,23 @@ async def build(ctx):
 # ─────────────────────────────────────────────────────────────────────────────
 def resolve_open_ticket_mention(guild):
     """Return a proper Discord channel mention (<#id>) for the open-ticket channel."""
-    # 1. Use cached ID from last !build
+    global open_ticket_ch_id
+    # 1. Use cached ID from last !build or prior resolve — most reliable
     if open_ticket_ch_id:
         ch_obj = guild.get_channel(open_ticket_ch_id)
         if ch_obj:
             return ch_obj.mention
-    # 2. Fallback: search by name, skip ticket-logs
+    # 2. Match the exact styled channel name: ch("🎫","open-ticket") → contains "ᴏᴘᴇɴ-ᴛɪᴄᴋᴇᴛ"
+    target = styled("open-ticket")
     for c in guild.text_channels:
-        name = c.name.lower()
-        if "ticket" in name and "log" not in name and "staff" not in name:
+        if target in c.name:
+            open_ticket_ch_id = c.id   # cache for future calls
+            return c.mention
+    # 3. Last resort: strip all decoration and match "openticket"
+    for c in guild.text_channels:
+        plain = c.name.replace("-", "").replace(" ", "").replace("│", "").lower()
+        if "openticket" in plain:
+            open_ticket_ch_id = c.id
             return c.mention
     return "`#open-ticket`"
 
@@ -935,6 +943,7 @@ async def add1(ctx):
     ow = build_overwrites(guild, None, "STAFF", role_map)
 
     open_ticket_mention = resolve_open_ticket_mention(guild)
+    log.info(f"[ADD1] open_ticket_mention resolved to: {open_ticket_mention}")
 
     status_msg = await ctx.send("⚙️  Updating emulator channel...")
 
