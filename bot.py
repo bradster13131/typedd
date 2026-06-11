@@ -377,9 +377,8 @@ def embed_emulator():
         "\u001b[1;37m  │  ╰─›  Lifetime  ─  £249.99\u001b[0m\n"
         "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
         "```\n"
-        "```ansi\n"
-        "\u001b[1;31m  📩  PURCHASE  \u001b[0m\u001b[2;37m─  Open a ticket in \u001b[0m\u001b[1;37m#open-ticket\u001b[0m\u001b[2;37m to buy\u001b[0m\n"
-        "```"
+        "\n"
+        f"**[🎫 Open a Purchase Ticket](https://discord.com/channels/1514452472939413545/{TICKET_CHANNEL_ID})**"
     )
     e.set_footer(text="MISERY © 2025  ·  Vanguard Emulator")
     return e
@@ -411,9 +410,8 @@ def embed_internal():
         "\u001b[1;37m  │  ╰─›  Lifetime  ─  £349.99\u001b[0m\n"
         "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
         "```\n"
-        "```ansi\n"
-        "\u001b[1;31m  📩  PURCHASE  \u001b[0m\u001b[2;37m─  Open a ticket in \u001b[0m\u001b[1;37m#open-ticket\u001b[0m\u001b[2;37m to buy\u001b[0m\n"
-        "```"
+        "\n"
+        f"**[🎫 Open a Purchase Ticket](https://discord.com/channels/1514452472939413545/{TICKET_CHANNEL_ID})**"
     )
     e.set_footer(text="MISERY © 2025  ·  Internal Cheat")
     return e
@@ -453,27 +451,10 @@ class TicketView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    # ── PURCHASE — sends direct link to ticket channel ────────────────────────
+    # ── PURCHASE — creates private purchase ticket channel ──────────────────
     @discord.ui.button(label="Purchase", emoji="🛒", style=discord.ButtonStyle.danger, custom_id="ticket_purchase")
     async def purchase(self, interaction: discord.Interaction, button: discord.ui.Button):
-        e = discord.Embed(color=RED)
-        e.description = (
-            "```ansi\n"
-            "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-            "\u001b[1;31m  ║        🛒  R E A D Y  T O  B U Y ?   ║\u001b[0m\n"
-            "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-            "```\n"
-            "```ansi\n"
-            "\u001b[2;37m  Head to the purchase ticket channel below\u001b[0m\n"
-            "\u001b[2;37m  and a staff member will assist you.\u001b[0m\n"
-            "```"
-        )
-        e.set_footer(text="MISERY © 2025  ·  Purchase")
-        e.description += f"\n\n**[🎫 Click here to open a purchase ticket]({TICKET_CHANNEL_URL})**"
-        await interaction.response.send_message(
-            embed=e,
-            ephemeral=True,
-        )
+        await self._create_ticket(interaction, "purchase")
 
     # ── SUPPORT — creates private ticket channel ──────────────────────────────
     @discord.ui.button(label="Support", emoji="🛠️", style=discord.ButtonStyle.secondary, custom_id="ticket_support")
@@ -523,6 +504,7 @@ class TicketView(discord.ui.View):
         ticket_ch = await guild.create_text_channel(ticket_name, category=ticket_cat, overwrites=ow)
 
         labels = {
+            "purchase":  ("🛒  Purchase Ticket",  "What product are you looking to buy? State the license length."),
             "support":   ("🛠️  Support Ticket",   "Describe your issue in detail. Staff will assist you shortly."),
             "technical": ("⚙️  Technical Ticket", "State your OS, loader version and the exact error you see."),
         }
