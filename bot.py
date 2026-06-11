@@ -136,7 +136,6 @@ def build_overwrites(guild, read_key, write_key, role_map):
     write_roles = resolve_group(write_key)
     ow = {}
 
-    # read_key is set → channel is restricted to those roles only
     if read_roles is not None:
         ow[guild.default_role] = discord.PermissionOverwrite(view_channel=False, send_messages=False)
         for rn in read_roles:
@@ -147,19 +146,15 @@ def build_overwrites(guild, read_key, write_key, role_map):
                     view_channel=True, send_messages=can_write, read_message_history=True
                 )
     else:
-        # read_key is None → everyone can see the channel
         if write_roles is None:
-            # No write restriction either → everyone can read and write freely
             ow[guild.default_role] = discord.PermissionOverwrite(
                 view_channel=True, send_messages=True, read_message_history=True
             )
         elif write_roles == ALL_NAMES:
-            # write="ALL" → literally everyone (including @everyone) can send messages
             ow[guild.default_role] = discord.PermissionOverwrite(
                 view_channel=True, send_messages=True, read_message_history=True
             )
         else:
-            # write restricted to specific roles, everyone can only read
             ow[guild.default_role] = discord.PermissionOverwrite(
                 view_channel=True, send_messages=False, read_message_history=True
             )
@@ -172,38 +167,34 @@ def build_overwrites(guild, read_key, write_key, role_map):
     return ow
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  EMBEDS
+#  DIVIDER
 # ─────────────────────────────────────────────────────────────────────────────
-DIV = "```\n▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n```"
+DIV = "▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰"
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  EMBEDS  — mobile-friendly (no ANSI, small-caps headers, clean layout)
+# ─────────────────────────────────────────────────────────────────────────────
 
 def embed_announcement():
     e = discord.Embed(color=RED)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m"
+        "```\n"
         "  ███╗   ███╗██╗███████╗███████╗██████╗ ██╗   ██╗\n"
         "  ████╗ ████║██║██╔════╝██╔════╝██╔══██╗╚██╗ ██╔╝\n"
         "  ██╔████╔██║██║███████╗█████╗  ██████╔╝ ╚████╔╝ \n"
         "  ██║╚██╔╝██║██║╚════██║██╔══╝  ██╔══██╗  ╚██╔╝  \n"
         "  ██║ ╚═╝ ██║██║███████║███████╗██║  ██║   ██║   \n"
         "  ╚═╝     ╚═╝╚═╝╚══════╝╚══════╝╚═╝  ╚═╝   ╚═╝  \n"
-        "\u001b[0m"
         "```\n"
-        "```ansi\n"
-        "\u001b[1;31m  ☠  THE MOST POWERFUL CHEAT ON THE MARKET  ☠\u001b[0m\n"
-        "\u001b[2;37m  Undetected  ·  Untouchable  ·  Unstoppable\u001b[0m\n"
-        "```\n"
-        "** **\n"
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║           SERVER NAVIGATION          ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "\u001b[0m\n"
-        f"\u001b[1;37m  📣\u001b[0m  \u001b[2;37mannouncements\u001b[0m   \u001b[1;31m›\u001b[0m  Updates & news\n"
-        f"\u001b[1;37m  📜\u001b[0m  \u001b[2;37mtos\u001b[0m             \u001b[1;31m›\u001b[0m  Rules you agree to\n"
-        f"\u001b[1;37m  🔴\u001b[0m  \u001b[2;37mproducts\u001b[0m        \u001b[1;31m›\u001b[0m  Browse & pricing\n"
-        f"\u001b[1;37m  🎫\u001b[0m  \u001b[2;37mopen-ticket\u001b[0m     \u001b[1;31m›\u001b[0m  Buy or get support\n"
-        "```"
+        f"**☠  ᴛʜᴇ ᴍᴏꜱᴛ ᴘᴏᴡᴇʀꜰᴜʟ ᴄʜᴇᴀᴛ ᴏɴ ᴛʜᴇ ᴍᴀʀᴋᴇᴛ  ☠**\n"
+        f"*ᴜɴᴅᴇᴛᴇᴄᴛᴇᴅ · ᴜɴᴛᴏᴜᴄʜᴀʙʟᴇ · ᴜɴꜱᴛᴏᴘᴘᴀʙʟᴇ*\n\n"
+        f"```{DIV}```\n"
+        "**📣  ꜱᴇʀᴠᴇʀ ɴᴀᴠɪɢᴀᴛɪᴏɴ**\n\n"
+        "📣  **ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛꜱ** › Updates & news\n"
+        "📜  **ᴛᴏꜱ** › Rules you agree to\n"
+        "🔴  **ᴘʀᴏᴅᴜᴄᴛꜱ** › Browse & pricing\n"
+        f"🎫  **ᴏᴘᴇɴ-ᴛɪᴄᴋᴇᴛ** › Buy or get support\n"
+        f"```{DIV}```"
     )
     e.set_image(url=LOGO_ATTACH)
     e.set_footer(text="MISERY © 2025  ·  Undetected. Untouchable. Unstoppable.")
@@ -213,34 +204,21 @@ def embed_tos():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║       📜  TERMS  OF  SERVICE         ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "\u001b[2;37m  By using any MISERY product you agree   \u001b[0m\n"
-        "\u001b[2;37m  to all terms listed below.              \u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;31m  §1  ─  NO CHARGEBACKS\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  All sales are final. Chargebacks result\u001b[0m\n"
-        "\u001b[2;37m       in a permanent ban and fraud report.\u001b[0m\n"
-        "\n"
-        "\u001b[1;31m  §2  ─  NO LEAKING\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Do not share, redistribute or resell any\u001b[0m\n"
-        "\u001b[2;37m       software without written authorisation.\u001b[0m\n"
-        "\n"
-        "\u001b[1;31m  §3  ─  ACCOUNT RESPONSIBILITY\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  MISERY is not liable for bans, suspensions\u001b[0m\n"
-        "\u001b[2;37m       or losses on your game account.\u001b[0m\n"
-        "\n"
-        "\u001b[1;31m  §4  ─  BUG REPORTING\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Exploiting bugs instead of reporting them\u001b[0m\n"
-        "\u001b[2;37m       = permanent ban, no refund.\u001b[0m\n"
-        "\n"
-        "\u001b[1;31m  §5  ─  STAFF AUTHORITY\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Staff decisions are final. Arguing results\u001b[0m\n"
-        "\u001b[2;37m       in removal with no appeal.\u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**📜  ᴛᴇʀᴍꜱ ᴏꜰ ꜱᴇʀᴠɪᴄᴇ**\n"
+        "*By using any MISERY product you agree to all terms listed below.*\n\n"
+        f"```{DIV}```\n"
+        "**§1  ─  ɴᴏ ᴄʜᴀʀɢᴇʙᴀᴄᴋꜱ**\n"
+        "╰─›  All sales are final. Chargebacks result in a permanent ban and fraud report.\n\n"
+        "**§2  ─  ɴᴏ ʟᴇᴀᴋɪɴɢ**\n"
+        "╰─›  Do not share, redistribute or resell any software without written authorisation.\n\n"
+        "**§3  ─  ᴀᴄᴄᴏᴜɴᴛ ʀᴇꜱᴘᴏɴꜱɪʙɪʟɪᴛʏ**\n"
+        "╰─›  MISERY is not liable for bans, suspensions or losses on your game account.\n\n"
+        "**§4  ─  ʙᴜɢ ʀᴇᴘᴏʀᴛɪɴɢ**\n"
+        "╰─›  Exploiting bugs instead of reporting them = permanent ban, no refund.\n\n"
+        "**§5  ─  ꜱᴛᴀꜰꜰ ᴀᴜᴛʜᴏʀɪᴛʏ**\n"
+        "╰─›  Staff decisions are final. Arguing results in removal with no appeal.\n"
+        f"```{DIV}```"
     )
     e.set_footer(text="MISERY © 2025  ·  Terms of Service")
     return e
@@ -249,19 +227,15 @@ def embed_changelog():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║         🔥  C H A N G E L O G        ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;31m  ▸  v1.0.0  ─  Initial Release\u001b[0m\n"
-        "\u001b[2;37m     ╰─›  Vanguard Emulator launched\u001b[0m\n"
-        "\u001b[2;37m     ╰─›  Internal Cheat launched\u001b[0m\n"
-        "\u001b[2;37m     ╰─›  Auth system online\u001b[0m\n"
-        "\n"
-        "\u001b[1;37m  Staff will post future updates here.\u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**🔥  ᴄʜᴀɴɢᴇʟᴏɢ**\n\n"
+        f"```{DIV}```\n"
+        "**▸  v1.0.0  ─  ɪɴɪᴛɪᴀʟ ʀᴇʟᴇᴀꜱᴇ**\n"
+        "╰─›  Vanguard Emulator launched\n"
+        "╰─›  Internal Cheat launched\n"
+        "╰─›  Auth system online\n\n"
+        "*Staff will post future updates here.*\n"
+        f"```{DIV}```"
     )
     e.set_footer(text="MISERY © 2025  ·  Changelog")
     return e
@@ -270,19 +244,16 @@ def embed_status():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║        ⚡  L I V E  S T A T U S      ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;32m  ●  MISERY EMULATOR    \u001b[0m\u001b[2;37m─────  \u001b[1;32mONLINE\u001b[0m\n"
-        "\u001b[1;32m  ●  MISERY INTERNAL    \u001b[0m\u001b[2;37m─────  \u001b[1;32mONLINE\u001b[0m\n"
-        "\u001b[1;32m  ●  AUTH / LOADER      \u001b[0m\u001b[2;37m─────  \u001b[1;32mONLINE\u001b[0m\n"
-        "\u001b[1;32m  ●  UPDATE SERVER      \u001b[0m\u001b[2;37m─────  \u001b[1;32mONLINE\u001b[0m\n"
-        "\u001b[1;32m  ●  API                \u001b[0m\u001b[2;37m─────  \u001b[1;32mONLINE\u001b[0m\n"
-        "\u001b[1;32m  ●  BYPASS CORE        \u001b[0m\u001b[2;37m─────  \u001b[1;32mONLINE\u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**⚡  ʟɪᴠᴇ ꜱᴛᴀᴛᴜꜱ**\n\n"
+        f"```{DIV}```\n"
+        "🟢  **ᴍɪꜱᴇʀʏ ᴇᴍᴜʟᴀᴛᴏʀ** ─── ONLINE\n"
+        "🟢  **ᴍɪꜱᴇʀʏ ɪɴᴛᴇʀɴᴀʟ** ─── ONLINE\n"
+        "🟢  **ᴀᴜᴛʜ / ʟᴏᴀᴅᴇʀ** ──── ONLINE\n"
+        "🟢  **ᴜᴘᴅᴀᴛᴇ ꜱᴇʀᴠᴇʀ** ──── ONLINE\n"
+        "🟢  **ᴀᴘɪ** ───────────── ONLINE\n"
+        "🟢  **ʙʏᴘᴀꜱꜱ ᴄᴏʀᴇ** ───── ONLINE\n"
+        f"```{DIV}```"
     )
     e.set_footer(text="MISERY © 2025  ·  Status last updated by staff")
     return e
@@ -291,18 +262,15 @@ def embed_vouches():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║          ⭐  V O U C H E S           ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "\u001b[2;37m  Real reviews from real customers.       \u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;37m  HOW TO VOUCH\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Must be a verified customer\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Include product + duration purchased\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Fake vouches = permanent ban\u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**⭐  ᴠᴏᴜᴄʜᴇꜱ**\n"
+        "*Real reviews from real customers.*\n\n"
+        f"```{DIV}```\n"
+        "**ʜᴏᴡ ᴛᴏ ᴠᴏᴜᴄʜ**\n"
+        "╰─›  Must be a verified customer\n"
+        "╰─›  Include product + duration purchased\n"
+        "╰─›  Fake vouches = permanent ban\n"
+        f"```{DIV}```"
     )
     e.set_footer(text="MISERY © 2025  ·  Vouches")
     return e
@@ -311,18 +279,15 @@ def embed_media():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║           🎥  M E D I A              ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "\u001b[2;37m  Clips, screenshots & showcases.         \u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;37m  SUBMISSION RULES\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Must feature MISERY products only\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  No watermarks from other providers\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Staff may remove off-topic content\u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**🎥  ᴍᴇᴅɪᴀ**\n"
+        "*Clips, screenshots & showcases.*\n\n"
+        f"```{DIV}```\n"
+        "**ꜱᴜʙᴍɪꜱꜱɪᴏɴ ʀᴜʟᴇꜱ**\n"
+        "╰─›  Must feature MISERY products only\n"
+        "╰─›  No watermarks from other providers\n"
+        "╰─›  Staff may remove off-topic content\n"
+        f"```{DIV}```"
     )
     e.set_footer(text="MISERY © 2025  ·  Media")
     return e
@@ -331,18 +296,15 @@ def embed_reselling():
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║        🔗  R E S E L L I N G         ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;37m  INTERESTED IN RESELLING MISERY?\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Open a ticket to apply\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Must have an established community\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Reseller pricing available on request\u001b[0m\n"
-        "\u001b[2;37m  ╰─›  Unauthorised reselling = permanent ban\u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**🔗  ʀᴇꜱᴇʟʟɪɴɢ**\n\n"
+        f"```{DIV}```\n"
+        "**ɪɴᴛᴇʀᴇꜱᴛᴇᴅ ɪɴ ʀᴇꜱᴇʟʟɪɴɢ ᴍɪꜱᴇʀʏ?**\n"
+        "╰─›  Open a ticket to apply\n"
+        "╰─›  Must have an established community\n"
+        "╰─›  Reseller pricing available on request\n"
+        "╰─›  Unauthorised reselling = permanent ban\n"
+        f"```{DIV}```"
     )
     e.set_footer(text="MISERY © 2025  ·  Reselling")
     return e
@@ -351,35 +313,29 @@ def embed_emulator(open_ticket_mention=""):
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║   🔴  MISERY  ─  VANGUARD EMULATOR   ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "\u001b[2;37m  The #1 Vanguard bypass on the market.   \u001b[0m\n"
-        "\u001b[2;37m  Undetected · Updated within hours.      \u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;31m  ┌─  🛡  COMPATIBILITY  ───────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Windows 10 & 11\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  All Motherboards\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  All CPUs & GPUs\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  HVCI On or Off\u001b[0m\n"
-        "\u001b[1;31m  ├─  ⚔  FEATURES  ────────────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Play completely without anticheat\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Bypasses VAN 152 & -102 errors\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Bypasses VALORANT 5\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  No game restart required\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Bypasses HVCI · TPM · Secure Boot\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  One-click Vanguard emulation\u001b[0m\n"
-        "\u001b[1;31m  ├─  💰  PRICING  ────────────────────────\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  3 Days    ─  £4.99\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  1 Week    ─  £14.99\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  1 Month   ─  £29.99\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  Lifetime  ─  £249.99\u001b[0m\n"
-        "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
-        "```\n"
-        "\n"
-        f"**📩  To purchase, go to {open_ticket_mention or '`#open-ticket`'} and click Purchase**"
+        f"```{DIV}```\n"
+        "**🔴  ᴍɪꜱᴇʀʏ ─ ᴠᴀɴɢᴜᴀʀᴅ ᴇᴍᴜʟᴀᴛᴏʀ**\n"
+        "*The #1 Vanguard bypass on the market. Undetected · Updated within hours.*\n\n"
+        f"```{DIV}```\n"
+        "**🛡  ᴄᴏᴍᴘᴀᴛɪʙɪʟɪᴛʏ**\n"
+        "╰─›  Windows 10 & 11\n"
+        "╰─›  All Motherboards\n"
+        "╰─›  All CPUs & GPUs\n"
+        "╰─›  HVCI On or Off\n\n"
+        "**⚔  ꜰᴇᴀᴛᴜʀᴇꜱ**\n"
+        "╰─›  Play completely without anticheat\n"
+        "╰─›  Bypasses VAN 152 & -102 errors\n"
+        "╰─›  Bypasses VALORANT 5\n"
+        "╰─›  No game restart required\n"
+        "╰─›  Bypasses HVCI · TPM · Secure Boot\n"
+        "╰─›  One-click Vanguard emulation\n\n"
+        "**💰  ᴘʀɪᴄɪɴɢ**\n"
+        "╰─›  3 Days ─── £4.99\n"
+        "╰─›  1 Week ─── £14.99\n"
+        "╰─›  1 Month ── £29.99\n"
+        "╰─›  Lifetime ─ £249.99\n"
+        f"```{DIV}```\n"
+        f"**📩  To purchase, open a ticket in {open_ticket_mention or '`#open-ticket`'}**"
     )
     e.set_footer(text="MISERY © 2025  ·  Vanguard Emulator")
     return e
@@ -388,31 +344,25 @@ def embed_internal(open_ticket_mention=""):
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║     🔴  MISERY  ─  INTERNAL CHEAT    ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "\u001b[2;37m  Flagship internal. Full-featured.       \u001b[0m\n"
-        "\u001b[2;37m  Undetected across all anticheat systems.\u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;31m  ┌─  ⚔  FEATURES  ────────────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Aimbot  ─  bone priority · smooth · FOV\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  ESP     ─  box · skeleton · health · dist\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Triggerbot + silent aim\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Radar hack\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  No-recoil & no-spread\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Config save & cloud sync\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  HWID spoofer included\u001b[0m\n"
-        "\u001b[1;31m  ├─  💰  PRICING  ────────────────────────\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  3 Days    ─  £9.99\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  1 Week    ─  £19.99\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  1 Month   ─  £49.99\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  Lifetime  ─  £349.99\u001b[0m\n"
-        "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
-        "```\n"
-        "\n"
-        f"**📩  To purchase, go to {open_ticket_mention or '`#open-ticket`'} and click Purchase**"
+        f"```{DIV}```\n"
+        "**🔴  ᴍɪꜱᴇʀʏ ─ ɪɴᴛᴇʀɴᴀʟ ᴄʜᴇᴀᴛ**\n"
+        "*Flagship internal. Full-featured. Undetected across all anticheat systems.*\n\n"
+        f"```{DIV}```\n"
+        "**⚔  ꜰᴇᴀᴛᴜʀᴇꜱ**\n"
+        "╰─›  Aimbot ─ bone priority · smooth · FOV\n"
+        "╰─›  ESP ─ box · skeleton · health · dist\n"
+        "╰─›  Triggerbot + silent aim\n"
+        "╰─›  Radar hack\n"
+        "╰─›  No-recoil & no-spread\n"
+        "╰─›  Config save & cloud sync\n"
+        "╰─›  HWID spoofer included\n\n"
+        "**💰  ᴘʀɪᴄɪɴɢ**\n"
+        "╰─›  3 Days ─── £9.99\n"
+        "╰─›  1 Week ─── £19.99\n"
+        "╰─›  1 Month ── £49.99\n"
+        "╰─›  Lifetime ─ £349.99\n"
+        f"```{DIV}```\n"
+        f"**📩  To purchase, open a ticket in {open_ticket_mention or '`#open-ticket`'}**"
     )
     e.set_footer(text="MISERY © 2025  ·  Internal Cheat")
     return e
@@ -420,20 +370,15 @@ def embed_internal(open_ticket_mention=""):
 def embed_ticket_panel():
     e = discord.Embed(color=RED)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║        🎫  O P E N  T I C K E T      ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "\u001b[2;37m  Select a category below to open a       \u001b[0m\n"
-        "\u001b[2;37m  private ticket with our staff.          \u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;31m  ┌─  CATEGORIES  ─────────────────────────\u001b[0m\n"
-        "\u001b[1;37m  │  🛒  PURCHASE  \u001b[0m\u001b[2;37m─  Buy or upgrade a license\u001b[0m\n"
-        "\u001b[1;37m  │  🛠  SUPPORT   \u001b[0m\u001b[2;37m─  Account & general help\u001b[0m\n"
-        "\u001b[1;37m  │  ⚙  TECHNICAL \u001b[0m\u001b[2;37m─  Loader · crash · inject\u001b[0m\n"
-        "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**🎫  ᴏᴘᴇɴ ᴛɪᴄᴋᴇᴛ**\n"
+        "*Select a category below to open a private ticket with our staff.*\n\n"
+        f"```{DIV}```\n"
+        "**ᴄᴀᴛᴇɢᴏʀɪᴇꜱ**\n"
+        "🛒  **ᴘᴜʀᴄʜᴀꜱᴇ** ─ Buy or upgrade a license\n"
+        "🛠  **ꜱᴜᴘᴘᴏʀᴛ** ─ Account & general help\n"
+        "⚙  **ᴛᴇᴄʜɴɪᴄᴀʟ** ─ Loader · crash · inject\n"
+        f"```{DIV}```"
     )
     e.set_image(url=LOGO_ATTACH)
     e.set_footer(text="MISERY © 2025  ·  Do not abuse the ticket system.")
@@ -452,22 +397,18 @@ class TicketView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    # ── PURCHASE — creates private purchase ticket channel ──────────────────
     @discord.ui.button(label="Purchase", emoji="🛒", style=discord.ButtonStyle.danger, custom_id="ticket_purchase")
     async def purchase(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self._create_ticket(interaction, "purchase")
 
-    # ── SUPPORT — creates private ticket channel ──────────────────────────────
     @discord.ui.button(label="Support", emoji="🛠️", style=discord.ButtonStyle.secondary, custom_id="ticket_support")
     async def support(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self._create_ticket(interaction, "support")
 
-    # ── TECHNICAL — creates private ticket channel ────────────────────────────
     @discord.ui.button(label="Technical Issue", emoji="⚙️", style=discord.ButtonStyle.secondary, custom_id="ticket_technical")
     async def technical(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self._create_ticket(interaction, "technical")
 
-    # ── SHARED TICKET CREATOR ─────────────────────────────────────────────────
     async def _create_ticket(self, interaction: discord.Interaction, ticket_type: str):
         await interaction.response.defer(ephemeral=True)
 
@@ -505,27 +446,21 @@ class TicketView(discord.ui.View):
         ticket_ch = await guild.create_text_channel(ticket_name, category=ticket_cat, overwrites=ow)
 
         labels = {
-            "purchase":  ("🛒  Purchase Ticket",  "What product are you looking to buy? State the license length."),
-            "support":   ("🛠️  Support Ticket",   "Describe your issue in detail. Staff will assist you shortly."),
-            "technical": ("⚙️  Technical Ticket", "State your OS, loader version and the exact error you see."),
+            "purchase":  ("🛒  ᴘᴜʀᴄʜᴀꜱᴇ ᴛɪᴄᴋᴇᴛ",  "What product are you looking to buy? State the license length."),
+            "support":   ("🛠️  ꜱᴜᴘᴘᴏʀᴛ ᴛɪᴄᴋᴇᴛ",   "Describe your issue in detail. Staff will assist you shortly."),
+            "technical": ("⚙️  ᴛᴇᴄʜɴɪᴄᴀʟ ᴛɪᴄᴋᴇᴛ", "State your OS, loader version and the exact error you see."),
         }
-        title, prompt = labels.get(ticket_type, ("🎫 Ticket", "Describe your issue."))
+        title, prompt = labels.get(ticket_type, ("🎫 ᴛɪᴄᴋᴇᴛ", "Describe your issue."))
 
         e = discord.Embed(color=RED)
         e.set_thumbnail(url=LOGO_ATTACH)
         e.description = (
-            "```ansi\n"
-            f"\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-            f"\u001b[1;31m  ║  {title:<38}║\u001b[0m\n"
-            f"\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-            "```\n"
-            "```ansi\n"
-            f"\u001b[1;37m  Welcome \u001b[0m\u001b[2;37m{member.name}\u001b[0m\u001b[1;37m  ─  staff will be with you shortly.\u001b[0m\n"
-            "\n"
-            f"\u001b[1;31m  ╰─›  \u001b[0m\u001b[2;37m{prompt}\u001b[0m\n"
-            "\n"
-            "\u001b[2;37m  Staff can close this ticket with the button below.\u001b[0m\n"
-            "```"
+            f"```{DIV}```\n"
+            f"**{title}**\n\n"
+            f"**ᴡᴇʟᴄᴏᴍᴇ, {member.name}** — staff will be with you shortly.\n\n"
+            f"╰─›  {prompt}\n\n"
+            "*Staff can close this ticket with the button below.*\n"
+            f"```{DIV}```"
         )
         e.set_footer(text="MISERY © 2025  ·  Support Ticket")
 
@@ -551,13 +486,11 @@ class CloseView(discord.ui.View):
         await interaction.response.send_message("🔒  Closing ticket in 3 seconds...")
         log.info(f"Ticket closed: {interaction.channel.name} by {interaction.user}")
 
-        # ── Collect ticket info before deletion ───────────────────────────
         ticket_name   = interaction.channel.name
         closed_by     = interaction.user
         guild         = interaction.guild
         ticket_ch     = interaction.channel
 
-        # Grab first 40 messages for the transcript snippet
         messages = []
         async for msg in ticket_ch.history(limit=40, oldest_first=True):
             if not msg.author.bot:
@@ -566,10 +499,8 @@ class CloseView(discord.ui.View):
         await asyncio.sleep(3)
         await interaction.channel.delete()
 
-        # ── Post to ticket-logs ───────────────────────────────────────────
         logs_ch = discord.utils.get(guild.text_channels, name="📋-│-ᴛɪᴄᴋᴇᴛ-ʟᴏɢꜱ".lower())
         if not logs_ch:
-            # fallback: find any channel with ticket-logs in the name
             logs_ch = discord.utils.find(
                 lambda c: "ticket-log" in c.name.lower(), guild.text_channels
             )
@@ -580,20 +511,14 @@ class CloseView(discord.ui.View):
             e = discord.Embed(color=RED)
             e.set_thumbnail(url=LOGO_ATTACH)
             e.description = (
-                "```ansi\n"
-                "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-                "\u001b[1;31m  ║        📋  T I C K E T  L O G        ║\u001b[0m\n"
-                "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-                "```\n"
-                "```ansi\n"
-                f"\u001b[1;37m  Ticket   \u001b[0m\u001b[2;37m{ticket_name}\u001b[0m\n"
-                f"\u001b[1;37m  Closed   \u001b[0m\u001b[2;37mby {closed_by.name}\u001b[0m\n"
-                f"\u001b[1;37m  Time     \u001b[0m\u001b[2;37m<t:{int(__import__('time').time())}:F>\u001b[0m\n"
-                "```\n"
-                "```ansi\n"
-                "\u001b[1;31m  ── Transcript (last 40 msgs) ────────────\u001b[0m\n"
-                f"\u001b[2;37m{transcript}\u001b[0m\n"
-                "```"
+                f"```{DIV}```\n"
+                "**📋  ᴛɪᴄᴋᴇᴛ ʟᴏɢ**\n\n"
+                f"```{DIV}```\n"
+                f"**ᴛɪᴄᴋᴇᴛ** ─ {ticket_name}\n"
+                f"**ᴄʟᴏꜱᴇᴅ ʙʏ** ─ {closed_by.name}\n"
+                f"**ᴛɪᴍᴇ** ─ <t:{int(__import__('time').time())}:F>\n\n"
+                f"**ᴛʀᴀɴꜱᴄʀɪᴘᴛ** *(last 40 msgs)*\n"
+                f"```{transcript}```"
             )
             e.set_footer(text="MISERY © 2025  ·  Ticket Logs")
             try:
@@ -607,21 +532,19 @@ class CloseView(discord.ui.View):
 import time
 import re as _re
 
-# Role IDs
 OWNER_ROLE_ID     = 1514460191465406544
 DEVELOPER_ROLE_ID = 1514460196196450465
 MOD_ROLE_ID       = 1514460200554463232
 MEMBER_ROLE_ID    = 1514460210419204258
 ALLOWED_INVITE_ROLES = {OWNER_ROLE_ID, DEVELOPER_ROLE_ID, MOD_ROLE_ID}
 
-# Security state
 security_active   = False
-spam_tracker      = {}          # user_id → [timestamps]
-nuke_tracker      = {}          # user_id → {"deletes": count, "last": timestamp}
+spam_tracker      = {}
+nuke_tracker      = {}
 
-SPAM_LIMIT        = 8           # messages in SPAM_WINDOW seconds = warning
+SPAM_LIMIT        = 8
 SPAM_WINDOW       = 5
-NUKE_DELETE_LIMIT = 3           # channel/role deletes in NUKE_WINDOW = kick
+NUKE_DELETE_LIMIT = 3
 NUKE_WINDOW       = 10
 
 INVITE_RE = _re.compile(r"(discord\.gg/|discord\.com/invite/|discordapp\.com/invite/)\S+", _re.IGNORECASE)
@@ -630,18 +553,13 @@ def has_any_role(member, role_ids):
     return any(r.id in role_ids for r in member.roles)
 
 async def warn_user(channel, member, reason):
-    """Send a styled warning into the channel."""
     e = discord.Embed(color=RED)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║         ⚠️   W A R N I N G           ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        f"\u001b[1;37m  User  \u001b[0m\u001b[2;37m{member.name}\u001b[0m\n"
-        f"\u001b[1;31m  ╰─›  {reason}\u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**⚠️  ᴡᴀʀɴɪɴɢ**\n\n"
+        f"**ᴜꜱᴇʀ** ─ {member.name}\n"
+        f"╰─›  {reason}\n"
+        f"```{DIV}```"
     )
     e.set_footer(text="MISERY © 2025  ·  Security System")
     try:
@@ -649,22 +567,19 @@ async def warn_user(channel, member, reason):
     except Exception:
         pass
 
-# ── ANTI-NUKE: track audit log channel/role deletions ────────────────────────
 @bot.event
 async def on_guild_channel_delete(channel):
     if not security_active:
         return
     guild = channel.guild
-    await asyncio.sleep(0.5)   # let audit log populate
+    await asyncio.sleep(0.5)
     try:
         async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_delete):
             perpetrator = entry.user
             if perpetrator is None or perpetrator.bot:
                 return
-            # Owners (top staff) are exempt
             if perpetrator.id == guild.owner_id:
                 return
-            # Check if this person has a dangerous role (mod or below) doing deletions
             uid = perpetrator.id
             now = time.time()
             if uid not in nuke_tracker:
@@ -677,14 +592,12 @@ async def on_guild_channel_delete(channel):
             log.warning(f"[ANTI-NUKE] {perpetrator} deleted a channel ({tracker['deletes']} in window)")
             if tracker["deletes"] >= NUKE_DELETE_LIMIT:
                 nuke_tracker[uid] = {"deletes": 0, "last": now}
-                # Remove all dangerous roles first
                 try:
                     dangerous = [r for r in perpetrator.roles if r.id in {MOD_ROLE_ID, DEVELOPER_ROLE_ID}]
                     if dangerous:
                         await perpetrator.remove_roles(*dangerous, reason="Anti-nuke: mass channel delete")
                 except Exception as ex:
                     log.error(f"[ANTI-NUKE] Role remove failed: {ex}")
-                # Kick
                 try:
                     await guild.kick(perpetrator, reason="Anti-nuke: mass channel deletion detected")
                     log.warning(f"[ANTI-NUKE] Kicked {perpetrator} for mass channel deletion.")
@@ -732,7 +645,6 @@ async def on_guild_role_delete(role):
     except Exception as ex:
         log.error(f"[ANTI-NUKE] Audit log error: {ex}")
 
-# ── MESSAGE SECURITY: spam + invite filter ────────────────────────────────────
 @bot.event
 async def on_message(message):
     if not message.guild or message.author.bot:
@@ -742,7 +654,6 @@ async def on_message(message):
     member = message.author
 
     if security_active:
-        # ── INVITE FILTER ──────────────────────────────────────────────────
         if INVITE_RE.search(message.content):
             if not has_any_role(member, ALLOWED_INVITE_ROLES):
                 try:
@@ -757,7 +668,6 @@ async def on_message(message):
                 await bot.process_commands(message)
                 return
 
-        # ── SPAM FILTER ────────────────────────────────────────────────────
         uid  = member.id
         now  = time.time()
         if uid not in spam_tracker:
@@ -781,7 +691,6 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-# ── !securitystart ────────────────────────────────────────────────────────────
 @bot.command(name="securitystart")
 @commands.has_permissions(administrator=True)
 async def security_start(ctx):
@@ -789,26 +698,21 @@ async def security_start(ctx):
     security_active = True
     e = discord.Embed(color=RED)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║      🛡️   S E C U R I T Y  O N       ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;32m  ●  Anti-spam          ACTIVE\u001b[0m\n"
-        "\u001b[1;32m  ●  Invite filter       ACTIVE\u001b[0m\n"
-        "\u001b[1;32m  ●  Anti-nuke           ACTIVE\u001b[0m\n"
-        "\n"
-        "\u001b[2;37m  Allowed invites  ─  Owner · Developer · Mod\u001b[0m\n"
-        "\u001b[2;37m  Spam limit       ─  8 msgs / 5 seconds\u001b[0m\n"
-        "\u001b[2;37m  Nuke threshold   ─  3 deletes / 10 seconds\u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**🛡️  ꜱᴇᴄᴜʀɪᴛʏ ᴏɴ**\n\n"
+        f"```{DIV}```\n"
+        "🟢  **ᴀɴᴛɪ-ꜱᴘᴀᴍ** ─ ACTIVE\n"
+        "🟢  **ɪɴᴠɪᴛᴇ ꜰɪʟᴛᴇʀ** ─ ACTIVE\n"
+        "🟢  **ᴀɴᴛɪ-ɴᴜᴋᴇ** ─ ACTIVE\n\n"
+        "*Allowed invites ─ Owner · Developer · Mod*\n"
+        "*Spam limit ─ 8 msgs / 5 seconds*\n"
+        "*Nuke threshold ─ 3 deletes / 10 seconds*\n"
+        f"```{DIV}```"
     )
     e.set_footer(text="MISERY © 2025  ·  Security System")
     await ctx.send(embed=e)
     log.info(f"[SECURITY] Started by {ctx.author}")
 
-# ── !securitystop ─────────────────────────────────────────────────────────────
 @bot.command(name="securitystop")
 @commands.has_permissions(administrator=True)
 async def security_stop(ctx):
@@ -816,98 +720,92 @@ async def security_stop(ctx):
     security_active = False
     e = discord.Embed(color=0x555555)
     e.description = (
-        "```ansi\n"
-        "\u001b[2;37m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[2;37m  ║      🔴   S E C U R I T Y  O F F     ║\u001b[0m\n"
-        "\u001b[2;37m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "\u001b[2;37m  All security modules disabled.          \u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**🔴  ꜱᴇᴄᴜʀɪᴛʏ ᴏꜰꜰ**\n\n"
+        "*All security modules disabled.*\n"
+        f"```{DIV}```"
     )
     e.set_footer(text="MISERY © 2025  ·  Security System")
     await ctx.send(embed=e)
     log.info(f"[SECURITY] Stopped by {ctx.author}")
 
-# ── INTERNAL (updated prices + full feature list) ────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+#  INTERNAL V2  (updated prices + full feature list)
+# ─────────────────────────────────────────────────────────────────────────────
 def embed_internal_v2(open_ticket_mention=""):
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║     🔴  MISERY  ─  INTERNAL CHEAT    ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "\u001b[2;37m  Flagship internal. Undetected.          \u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;31m  ┌─  🎯  AIMBOT  ──────────────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  Enable · Calc Spread · 360 FOV         \u001b[0m\n"
-        "\u001b[2;37m  │  Visible Check · Recoil Control          \u001b[0m\n"
-        "\u001b[2;37m  │  Draw FOV · FOV RGB · Smoothness         \u001b[0m\n"
-        "\u001b[2;37m  │  FOV Value · Aim Key · Target Bone       \u001b[0m\n"
-        "\u001b[1;31m  ├─  👁  VISUALS  ─────────────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  Skeleton · Box 3D · Box 2D              \u001b[0m\n"
-        "\u001b[2;37m  │  Box With Health · Box Corner · Head Box \u001b[0m\n"
-        "\u001b[2;37m  │  Snapline · Health Bar · Agent · Distance\u001b[0m\n"
-        "\u001b[2;37m  │  Weapon · Player Name · Rank · Ammo      \u001b[0m\n"
-        "\u001b[2;37m  │  WireFrame · Chams · Chams RGB · Radar   \u001b[0m\n"
-        "\u001b[2;37m  │  Sound ESP · Spectator · Spike Timer     \u001b[0m\n"
-        "\u001b[2;37m  │  Abilities · Visible Check               \u001b[0m\n"
-        "\u001b[1;31m  ├─  ⚙  MISC  ────────────────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  Skip Tutorial · FOV Changer             \u001b[0m\n"
-        "\u001b[2;37m  │  Aspect Ratio · Watermark · Bullet Tracers\u001b[0m\n"
-        "\u001b[2;37m  │  View Model · Damage Counter · Hit Sound \u001b[0m\n"
-        "\u001b[2;37m  │  China Hat · Third Person · Hit Sound Sel\u001b[0m\n"
-        "\u001b[1;31m  ├─  🎨  SKINS  ───────────────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  Unlock All Skins · Finishers             \u001b[0m\n"
-        "\u001b[2;37m  │  Only Last Kill · Gun Buddy               \u001b[0m\n"
-        "\u001b[1;31m  ├─  🎨  COLORS  ──────────────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  ESP Visible/Hidden · Health Colors       \u001b[0m\n"
-        "\u001b[2;37m  │  Chams · Watermark · Glow Intensity       \u001b[0m\n"
-        "\u001b[1;31m  ├─  💾  CONFIGS  ─────────────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  Clipboard Import/Export · Save/Load      \u001b[0m\n"
-        "\u001b[2;37m  │  UNLOAD · Menu Key                        \u001b[0m\n"
-        "\u001b[1;31m  ├─  💰  PRICING  ────────────────────────\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  3 Days    ─  $20\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  1 Week    ─  $30\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  1 Month   ─  $60\u001b[0m\n"
-        "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
-        "```\n"
-        f"**📩  To purchase, go to {open_ticket_mention or '`#open-ticket`'} and click Purchase**"
+        f"```{DIV}```\n"
+        "**🔴  ᴍɪꜱᴇʀʏ ─ ɪɴᴛᴇʀɴᴀʟ ᴄʜᴇᴀᴛ**\n"
+        "*Flagship internal. Undetected.*\n\n"
+        f"```{DIV}```\n"
+        "**🎯  ᴀɪᴍʙᴏᴛ**\n"
+        "╰─›  Enable · Calc Spread · 360 FOV\n"
+        "╰─›  Visible Check · Recoil Control\n"
+        "╰─›  Draw FOV · FOV RGB · Smoothness\n"
+        "╰─›  FOV Value · Aim Key · Target Bone\n\n"
+        "**👁  ᴠɪꜱᴜᴀʟꜱ**\n"
+        "╰─›  Skeleton · Box 3D · Box 2D\n"
+        "╰─›  Box With Health · Box Corner · Head Box\n"
+        "╰─›  Snapline · Health Bar · Agent · Distance\n"
+        "╰─›  Weapon · Player Name · Rank · Ammo\n"
+        "╰─›  WireFrame · Chams · Chams RGB · Radar\n"
+        "╰─›  Sound ESP · Spectator · Spike Timer\n"
+        "╰─›  Abilities · Visible Check\n\n"
+        "**⚙  ᴍɪꜱᴄ**\n"
+        "╰─›  Skip Tutorial · FOV Changer\n"
+        "╰─›  Aspect Ratio · Watermark · Bullet Tracers\n"
+        "╰─›  View Model · Damage Counter · Hit Sound\n"
+        "╰─›  China Hat · Third Person · Hit Sound Sel\n\n"
+        "**🎨  ꜱᴋɪɴꜱ**\n"
+        "╰─›  Unlock All Skins · Finishers\n"
+        "╰─›  Only Last Kill · Gun Buddy\n\n"
+        "**🎨  ᴄᴏʟᴏᴜʀꜱ**\n"
+        "╰─›  ESP Visible/Hidden · Health Colors\n"
+        "╰─›  Chams · Watermark · Glow Intensity\n\n"
+        "**💾  ᴄᴏɴꜰɪɢꜱ**\n"
+        "╰─›  Clipboard Import/Export · Save/Load\n"
+        "╰─›  UNLOAD · Menu Key\n\n"
+        "**💰  ᴘʀɪᴄɪɴɢ**\n"
+        "╰─›  3 Days ─── $20\n"
+        "╰─›  1 Week ─── $30\n"
+        "╰─›  1 Month ── $60\n"
+        f"```{DIV}```\n"
+        f"**📩  To purchase, open a ticket in {open_ticket_mention or '`#open-ticket`'}**"
     )
     e.set_footer(text="MISERY © 2025  ·  Internal Cheat")
     return e
 
-# ── SKINCHANGER ───────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+#  SKINCHANGER
+# ─────────────────────────────────────────────────────────────────────────────
 def embed_skinchanger(open_ticket_mention=""):
     e = discord.Embed(color=RED)
     e.set_thumbnail(url=LOGO_ATTACH)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║    🎨  MISERY  ─  SKIN CHANGER       ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "\u001b[2;37m  Change any skin. Undetected.            \u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;31m  ┌─  🛡  COMPATIBILITY  ───────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Windows 10 & 11\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  All Motherboards & CPUs\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  HVCI On or Off\u001b[0m\n"
-        "\u001b[1;31m  ├─  ⚔  FEATURES  ────────────────────────\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Unlock All Skins\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Unlock All Colours\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Unlock All Buddies\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Unlock All Sprays & Cards\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Finishers & Gun Buddies\u001b[0m\n"
-        "\u001b[2;37m  │  ╰─›  Client-sided · Easy one-click use\u001b[0m\n"
-        "\u001b[1;31m  ├─  💰  PRICING  ────────────────────────\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  3 Days    ─  $10\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  1 Week    ─  $20\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  1 Month   ─  $50\u001b[0m\n"
-        "\u001b[1;37m  │  ╰─›  Lifetime  ─  $100\u001b[0m\n"
-        "\u001b[1;31m  └─────────────────────────────────────────\u001b[0m\n"
-        "```\n"
-        f"**📩  To purchase, go to {open_ticket_mention or '`#open-ticket`'} and click Purchase**"
+        f"```{DIV}```\n"
+        "**🎨  ᴍɪꜱᴇʀʏ ─ ꜱᴋɪɴ ᴄʜᴀɴɢᴇʀ**\n"
+        "*Change any skin. Undetected.*\n\n"
+        f"```{DIV}```\n"
+        "**🛡  ᴄᴏᴍᴘᴀᴛɪʙɪʟɪᴛʏ**\n"
+        "╰─›  Windows 10 & 11\n"
+        "╰─›  All Motherboards & CPUs\n"
+        "╰─›  HVCI On or Off\n\n"
+        "**⚔  ꜰᴇᴀᴛᴜʀᴇꜱ**\n"
+        "╰─›  Unlock All Skins\n"
+        "╰─›  Unlock All Colours\n"
+        "╰─›  Unlock All Buddies\n"
+        "╰─›  Unlock All Sprays & Cards\n"
+        "╰─›  Finishers & Gun Buddies\n"
+        "╰─›  Client-sided · Easy one-click use\n\n"
+        "**💰  ᴘʀɪᴄɪɴɢ**\n"
+        "╰─›  3 Days ─── $10\n"
+        "╰─›  1 Week ─── $20\n"
+        "╰─›  1 Month ── $50\n"
+        "╰─›  Lifetime ─ $100\n"
+        f"```{DIV}```\n"
+        f"**📩  To purchase, open a ticket in {open_ticket_mention or '`#open-ticket`'}**"
     )
     e.set_footer(text="MISERY © 2025  ·  Skin Changer")
     return e
@@ -944,7 +842,6 @@ async def build(ctx):
     await dm("☠️  **MISERY** build starting — do not touch the server.")
     log.info("BUILD STARTED")
 
-    # 1. Wipe existing channels then categories
     for ch_ in list(guild.channels):
         if not isinstance(ch_, discord.CategoryChannel):
             try:    await ch_.delete()
@@ -956,10 +853,8 @@ async def build(ctx):
         await asyncio.sleep(0.4)
     log.info("Server wiped.")
 
-    # 2. Role map
     role_map = {r.name: r for r in guild.roles}
 
-    # 3. Build channels
     key_to_channel = {}
     for section in SERVER_LAYOUT:
         cat_name = section.get("category")
@@ -981,7 +876,6 @@ async def build(ctx):
 
     await dm("✅  Channels built.")
 
-    # 4. Send embeds
     open_ticket_ch = key_to_channel.get("openticket")
     open_ticket_mention = open_ticket_ch.mention if open_ticket_ch else "`#open-ticket`"
 
@@ -999,7 +893,6 @@ async def build(ctx):
                 log.error(f"Embed error [{key}]: {ex}")
             await asyncio.sleep(0.5)
 
-    # 5. Ticket panel
     ch_obj = key_to_channel.get("openticket")
     if ch_obj:
         try:
@@ -1012,7 +905,7 @@ async def build(ctx):
     await dm("☠️  **MISERY** build complete! Everything is live.")
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  !add2  ─  adds misery-internal (updated) + misery-skinchanger to products
+#  !add2
 # ─────────────────────────────────────────────────────────────────────────────
 @bot.command(name="add2")
 @commands.has_permissions(administrator=True)
@@ -1020,7 +913,6 @@ async def add2(ctx):
     guild    = ctx.guild
     role_map = {r.name: r for r in guild.roles}
 
-    # Find the products category (case-insensitive partial match)
     products_cat = discord.utils.find(
         lambda c: "products" in c.name.lower(), guild.categories
     )
@@ -1028,10 +920,8 @@ async def add2(ctx):
         await ctx.send("❌  Could not find the PRODUCTS category. Run `!build` first.", delete_after=8)
         return
 
-    # Permissions: everyone can read, only staff can write
     ow = build_overwrites(guild, None, "STAFF", role_map)
 
-    # Find open-ticket channel for clickable mention in embeds
     open_ticket_ch = discord.utils.find(
         lambda c: "open-ticket" in c.name.lower(), guild.text_channels
     )
@@ -1039,7 +929,6 @@ async def add2(ctx):
 
     status_msg = await ctx.send("⚙️  Adding channels...")
 
-    # ── misery-internal (updated embed) ──────────────────────────────────────
     internal_ch = discord.utils.find(
         lambda c: "misery-internal" in c.name.lower(), guild.text_channels
     )
@@ -1051,7 +940,6 @@ async def add2(ctx):
     else:
         await status_msg.edit(content="⚙️  `misery-internal` exists — updating embed...")
 
-    # Clear old messages in internal channel (up to 10)
     try:
         await internal_ch.purge(limit=10)
     except Exception:
@@ -1059,7 +947,6 @@ async def add2(ctx):
     await internal_ch.send(embed=embed_internal_v2(open_ticket_mention), file=logo_file())
     await asyncio.sleep(0.5)
 
-    # ── misery-skinchanger (new channel) ─────────────────────────────────────
     skin_ch = discord.utils.find(
         lambda c: "skinchanger" in c.name.lower(), guild.text_channels
     )
@@ -1078,18 +965,13 @@ async def add2(ctx):
     await skin_ch.send(embed=embed_skinchanger(open_ticket_mention), file=logo_file())
     await asyncio.sleep(0.5)
 
-    # Done
     e = discord.Embed(color=RED)
     e.description = (
-        "```ansi\n"
-        "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-        "\u001b[1;31m  ║       ✅   A D D 2   D O N E         ║\u001b[0m\n"
-        "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-        "```\n"
-        "```ansi\n"
-        "\u001b[1;32m  ●  misery-internal    ─  updated\u001b[0m\n"
-        "\u001b[1;32m  ●  misery-skinchanger ─  live\u001b[0m\n"
-        "```"
+        f"```{DIV}```\n"
+        "**✅  ᴀᴅᴅ2 ᴄᴏᴍᴘʟᴇᴛᴇ**\n\n"
+        "🟢  **misery-internal** ─ updated\n"
+        "🟢  **misery-skinchanger** ─ live\n"
+        f"```{DIV}```"
     )
     e.set_footer(text="MISERY © 2025  ·  !add2")
     await status_msg.delete()
@@ -1097,7 +979,7 @@ async def add2(ctx):
     log.info(f"[ADD2] Completed by {ctx.author}")
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  !close  ─  staff command
+#  !close
 # ─────────────────────────────────────────────────────────────────────────────
 @bot.command(name="close")
 async def close_cmd(ctx):
@@ -1128,20 +1010,14 @@ async def close_cmd(ctx):
             e = discord.Embed(color=RED)
             e.set_thumbnail(url=LOGO_ATTACH)
             e.description = (
-                "```ansi\n"
-                "\u001b[1;31m  ╔══════════════════════════════════════╗\u001b[0m\n"
-                "\u001b[1;31m  ║        📋  T I C K E T  L O G        ║\u001b[0m\n"
-                "\u001b[1;31m  ╚══════════════════════════════════════╝\u001b[0m\n"
-                "```\n"
-                "```ansi\n"
-                f"\u001b[1;37m  Ticket   \u001b[0m\u001b[2;37m{ticket_name}\u001b[0m\n"
-                f"\u001b[1;37m  Closed   \u001b[0m\u001b[2;37mby {ctx.author.name}\u001b[0m\n"
-                f"\u001b[1;37m  Time     \u001b[0m\u001b[2;37m<t:{int(__import__('time').time())}:F>\u001b[0m\n"
-                "```\n"
-                "```ansi\n"
-                "\u001b[1;31m  ── Transcript (last 40 msgs) ────────────\u001b[0m\n"
-                f"\u001b[2;37m{transcript}\u001b[0m\n"
-                "```"
+                f"```{DIV}```\n"
+                "**📋  ᴛɪᴄᴋᴇᴛ ʟᴏɢ**\n\n"
+                f"```{DIV}```\n"
+                f"**ᴛɪᴄᴋᴇᴛ** ─ {ticket_name}\n"
+                f"**ᴄʟᴏꜱᴇᴅ ʙʏ** ─ {ctx.author.name}\n"
+                f"**ᴛɪᴍᴇ** ─ <t:{int(__import__('time').time())}:F>\n\n"
+                f"**ᴛʀᴀɴꜱᴄʀɪᴘᴛ** *(last 40 msgs)*\n"
+                f"```{transcript}```"
             )
             e.set_footer(text="MISERY © 2025  ·  Ticket Logs")
             try:
@@ -1165,4 +1041,4 @@ async def on_ready():
 #  ENTRY POINT
 # ─────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    bot.run(BOT_TOKEN, log_handler=None)   # logging already configured above
+    bot.run(BOT_TOKEN, log_handler=None)
