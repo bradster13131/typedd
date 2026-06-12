@@ -26,6 +26,15 @@ TICKET_CHANNEL_URL = os.environ.get(
 )
 STAFF_ROLE_IDS    = {1514460196196450465, 1514460191465406544, 1514460200554463232}
 
+# OAuth2 — set these in Railway → Variables for the guild-join feature
+# OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET, OAUTH_REDIRECT_URI must be set
+# BACKUP_GUILD_ID  = the guild ID to drag verified users into (your backup server)
+OAUTH_CLIENT_ID     = os.environ.get("OAUTH_CLIENT_ID", "")
+OAUTH_CLIENT_SECRET = os.environ.get("OAUTH_CLIENT_SECRET", "")
+OAUTH_REDIRECT_URI  = os.environ.get("OAUTH_REDIRECT_URI", "")   # e.g. https://yourdomain.com/callback
+BACKUP_GUILD_ID     = int(os.environ.get("BACKUP_GUILD_ID", "0"))
+MEMBER_ROLE_ID_VER  = int(os.environ.get("MEMBER_ROLE_ID", "1514460210419204258"))
+
 # ─────────────────────────────────────────────────────────────────────────────
 #  BRAND
 # ─────────────────────────────────────────────────────────────────────────────
@@ -77,6 +86,7 @@ SERVER_LAYOUT = [
     {
         "category": None,
         "channels": [
+            {"type": "text",  "key": "verify",         "name": ch("✅","verify"),        "read": None,    "write": None},
             {"type": "voice", "key": None,             "name": "🟢 │ WORKING",        "read": None,    "write": None},
             {"type": "voice", "key": None,             "name": "💀 │ SHOWCASE",        "read": None,    "write": None},
         ],
@@ -803,6 +813,215 @@ def embed_skinchanger(open_ticket_mention=""):
     return e
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  VERIFICATION SYSTEM
+# ─────────────────────────────────────────────────────────────────────────────
+import urllib.parse
+import aiohttp
+
+def embed_verify():
+    e = discord.Embed(color=RED)
+    e.set_thumbnail(url=LOGO_ATTACH)
+    e.title = "✅  ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ"
+    e.description = (
+        f"*Welcome to MISERY. Complete verification to gain access.*\n"
+        f"{DIV}\n\n"
+        "**ʜᴏᴡ ɪᴛ ᴡᴏʀᴋꜱ**\n"
+        "→  Click **Verify** below\n"
+        "→  You will be asked to authorise MISERY\n"
+        "→  This allows us to keep you in our community\n"
+        "    if this server is ever removed\n"
+        "→  Accepting grants you the **Members** role\n\n"
+        f"{DIV}\n\n"
+        "**ᴡʜʏ ᴅᴏ ᴡᴇ ᴀꜱᴋ ᴛʜɪꜱ?**\n"
+        "→  Discord can ban servers without warning\n"
+        "→  We keep an invite-only backup server\n"
+        "→  Authorising lets us move you there instantly\n"
+        "→  We will **never** join you to random servers\n\n"
+        f"{DIV}"
+    )
+    e.set_image(url=LOGO_ATTACH)
+    e.set_footer(text="MISERY © 2025  ·  Verification System")
+    return e
+
+def build_oauth_url(state: str) -> str:
+    """Build the Discord OAuth2 URL that requests guilds.join scope."""
+    params = urllib.parse.urlencode({
+        "client_id":     OAUTH_CLIENT_ID,
+        "redirect_uri":  OAUTH_REDIRECT_URI,
+        "response_type": "code",
+        "scope":         "identify guilds.join",
+        "state":         state,
+        "prompt":        "consent",
+    })
+    return f"https://discord.com/api/oauth2/authorize?{params}"
+
+class VerifyView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Verify", emoji="✅", style=discord.ButtonStyle.success, custom_id="verify_accept")
+    async def verify_accept(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
+        member = interaction.user
+        guild  = interaction.guild
+
+        # Check if already verified (has Members role or higher)
+        member_role = discord.utils.get(guild.roles, id=MEMBER_ROLE_ID_VER)
+        if member_role and member_role in member.roles:
+            await interaction.followup.send("✅  You are already verified!", ephemeral=True)
+            return
+
+        # If OAuth is configured, send them the link
+        if OAUTH_CLIENT_ID and OAUTH_REDIRECT_URI:
+            state     = f"{member.id}-{guild.id}"
+            oauth_url = build_oauth_url(state)
+            e = discord.Embed(color=RED)
+            e.title = "✅  ᴠᴇʀɪꜰʏ ʏᴏᴜʀ ᴀᴄᴄᴏᴜɴᴛ"
+            e.description = (
+                f"{DIV}\n\n"
+                "**ꜱᴛᴇᴘ 1** — Click the link below\n"
+                "**ꜱᴛᴇᴘ 2** — Authorise MISERY\n"
+                "**ꜱᴛᴇᴘ 3** — Return here. Role granted automatically.\n\n"
+                f"→  [**Click here to verify**]({oauth_url})\n\n"
+                "*This authorises us to add you to our backup server\n"
+                "if this server is ever deleted or banned.*\n\n"
+                f"{DIV}"
+            )
+            e.set_footer(text="MISERY © 2025  ·  Verification")
+            await interaction.followup.send(embed=e, ephemeral=True)
+            log.info(f"[VERIFY] OAuth URL sent to {member} ({member.id})")
+        else:
+            # OAuth not configured — grant role directly (basic verify)
+            await _grant_member_role(interaction, member, guild)
+
+    @discord.ui.button(label="Decline", emoji="❌", style=discord.ButtonStyle.secondary, custom_id="verify_decline")
+    async def verify_decline(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
+        member = interaction.user
+        e = discord.Embed(color=0x555555)
+        e.title = "❌  ᴅᴇᴄʟɪɴᴇᴅ"
+        e.description = (
+            f"{DIV}\n\n"
+            "You declined the verification.\n"
+            "→  You will **not** receive the Members role\n"
+            "→  Most channels will remain locked\n\n"
+            "*If you change your mind, click Verify above.*\n\n"
+            f"{DIV}"
+        )
+        e.set_footer(text="MISERY © 2025  ·  Verification")
+        await interaction.followup.send(embed=e, ephemeral=True)
+        log.info(f"[VERIFY] {member} ({member.id}) declined verification.")
+
+async def _grant_member_role(interaction, member, guild):
+    """Assign the Members role and confirm to the user."""
+    member_role = discord.utils.get(guild.roles, id=MEMBER_ROLE_ID_VER)
+    if not member_role:
+        # Try to find by name as fallback
+        member_role = discord.utils.find(
+            lambda r: "member" in r.name.lower() or "👤" in r.name, guild.roles
+        )
+    if member_role:
+        try:
+            await member.add_roles(member_role, reason="Verification accepted")
+            e = discord.Embed(color=0x2ecc71)
+            e.title = "✅  ᴠᴇʀɪꜰɪᴇᴅ"
+            e.description = (
+                f"{DIV}\n\n"
+                f"Welcome to **MISERY**, {member.mention}!\n"
+                "→  You now have full Member access\n"
+                "→  Check the product channels to get started\n\n"
+                f"{DIV}"
+            )
+            e.set_footer(text="MISERY © 2025  ·  Verification")
+            await interaction.followup.send(embed=e, ephemeral=True)
+            log.info(f"[VERIFY] Role granted to {member} ({member.id})")
+        except discord.Forbidden:
+            await interaction.followup.send(
+                "⚠️  I don't have permission to assign roles. Contact staff.", ephemeral=True
+            )
+    else:
+        await interaction.followup.send(
+            "⚠️  Members role not found. Contact staff.", ephemeral=True
+        )
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  OAUTH CALLBACK — call this from your web server after redirect
+#  Usage: POST /verify  body: {"code": "...", "state": "userid-guildid"}
+#  Or use !manualverify <user_id> in Discord for manual staff override
+# ─────────────────────────────────────────────────────────────────────────────
+@bot.command(name="manualverify")
+@commands.has_permissions(administrator=True)
+async def manual_verify(ctx, member: discord.Member):
+    """Staff command: manually grant verified role to a member."""
+    guild       = ctx.guild
+    member_role = discord.utils.get(guild.roles, id=MEMBER_ROLE_ID_VER)
+    if not member_role:
+        member_role = discord.utils.find(
+            lambda r: "member" in r.name.lower() or "👤" in r.name, guild.roles
+        )
+    if member_role:
+        await member.add_roles(member_role, reason=f"Manual verify by {ctx.author}")
+        e = discord.Embed(color=0x2ecc71)
+        e.title = "✅  ᴍᴀɴᴜᴀʟ ᴠᴇʀɪꜰʏ"
+        e.description = (
+            f"{DIV}\n\n"
+            f"→  {member.mention} has been manually verified\n"
+            f"→  Role: **{member_role.name}** assigned\n\n"
+            f"{DIV}"
+        )
+        e.set_footer(text="MISERY © 2025  ·  Verification")
+        await ctx.send(embed=e)
+        log.info(f"[VERIFY] {member} manually verified by {ctx.author}")
+    else:
+        await ctx.send("❌  Members role not found.", delete_after=6)
+
+@bot.command(name="addverify")
+@commands.has_permissions(administrator=True)
+async def addverify(ctx):
+    """Deploy or refresh the verification panel in the verify channel."""
+    guild    = ctx.guild
+    role_map = {r.name: r for r in guild.roles}
+
+    # Find or create the verify channel
+    verify_ch = discord.utils.find(
+        lambda c: styled("verify") in c.name or "verify" in c.name.lower(),
+        guild.text_channels
+    )
+    if not verify_ch:
+        # Create it — visible to everyone but no one can send messages
+        ow = {
+            guild.default_role: discord.PermissionOverwrite(
+                view_channel=True, send_messages=False, read_message_history=True
+            )
+        }
+        for rn in STAFF_NAMES:
+            r = role_map.get(rn)
+            if r:
+                ow[r] = discord.PermissionOverwrite(
+                    view_channel=True, send_messages=True, read_message_history=True
+                )
+        verify_ch = await guild.create_text_channel(ch("✅", "verify"), overwrites=ow)
+        await ctx.send(f"⚙️  Created {verify_ch.mention}...")
+
+    try:
+        await verify_ch.purge(limit=10)
+    except Exception:
+        pass
+
+    await verify_ch.send(embed=embed_verify(), file=logo_file(), view=VerifyView())
+
+    e = discord.Embed(color=RED)
+    e.title = "✅  ᴠᴇʀɪꜰʏ ᴘᴀɴᴇʟ ʟɪᴠᴇ"
+    e.description = (
+        f"{DIV}\n\n"
+        f"🟢  Verification panel deployed in {verify_ch.mention}\n\n"
+        f"{DIV}"
+    )
+    e.set_footer(text="MISERY © 2025  ·  !addverify")
+    await ctx.send(embed=e)
+    log.info(f"[ADDVERIFY] Panel deployed by {ctx.author}")
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  EMBED MAP
 # ─────────────────────────────────────────────────────────────────────────────
 EMBED_MAP = {
@@ -817,6 +1036,8 @@ EMBED_MAP = {
     "internal":     embed_internal,
     "skinchanger":  embed_skinchanger,
 }
+# verify is handled separately (needs VerifyView button)
+VERIFY_EMBED_KEY = "verify"
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  !build  ─  full server deploy
@@ -895,6 +1116,15 @@ async def build(ctx):
             log.info("Ticket panel sent.")
         except Exception as ex:
             log.error(f"Ticket panel error: {ex}")
+
+    verify_obj = key_to_channel.get("verify")
+    if verify_obj:
+        try:
+            await verify_obj.purge(limit=5)
+            await verify_obj.send(embed=embed_verify(), file=logo_file(), view=VerifyView())
+            log.info("Verify panel sent.")
+        except Exception as ex:
+            log.error(f"Verify panel error: {ex}")
 
     log.info("BUILD COMPLETE")
     await dm("☠️  **MISERY** build complete! Everything is live.")
@@ -1103,6 +1333,7 @@ async def close_cmd(ctx):
 async def on_ready():
     bot.add_view(TicketView())
     bot.add_view(CloseView())
+    bot.add_view(VerifyView())
     log.info(f"Online ─ {bot.user}  (ID: {bot.user.id})")
     log.info("Type  !build  in your server to deploy everything.")
 
